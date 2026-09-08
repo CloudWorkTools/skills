@@ -1,0 +1,16 @@
+{
+  "name": "@cloudworktools/skills",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Agent skills for production-like, on-demand pull request previews",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CloudWorkTools/skills.git"
+  },
+  "files": ["skills/"],
+  "scripts": {
+    "test": "node --test tests/install.test.mjs"
+  },
+  "engines": { "node": ">=22" }
+}

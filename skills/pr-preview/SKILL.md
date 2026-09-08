@@ -21,6 +21,7 @@ Prefer an existing project preview script after checking its source and ownershi
 - For a PR, fetch `refs/pull/<number>/head`, resolve its full SHA, and verify the detached worktree matches it. Stop on Git failures or dirty managed worktrees. For a local path, preserve uncommitted changes and report SHA plus dirty status.
 - Use a trusted controller and reviewed Compose configuration. PR-supplied services, host mounts, privileges, networks, and build entitlements require an isolated execution boundary; an override does not remove them automatically.
 - Give each source a stable, distinct identity. Hash the full canonical path for local worktrees. Use loopback ports and preview-owned volumes/networks; refuse existing resources whose ownership cannot be established.
+- On an explicit `up`, a fully verified stopped legacy preview may be removed before fresh creation: require the exact expected containers, consistent Compose labels, and matching preview-only volume/network labels. Running, incomplete, or mismatched resources remain a refusal.
 - Save private startup configuration and source metadata independently of the source tree. Serialize mutations of one preview. Track the last successfully started image separately from a failed update.
 
 ## Verify before handing over
@@ -29,6 +30,6 @@ Require successful build, required service health, and a bounded HTTP check agai
 
 ## Logs and teardown
 
-Use the saved startup configuration and verified resource ownership. Logs and teardown work offline without fetching, checking out, or requiring the original source directory. Following logs must not block teardown. Remove only this preview's disposable containers, networks, and volumes; verify removal and preserve other workloads. Missing state requires ownership recovery, not guessing today's PR configuration.
+Use the saved startup configuration and verified resource ownership. Logs and teardown work offline without fetching, checking out, or requiring the original source directory. Following logs must not block teardown. Remove only this preview's disposable containers, networks, and volumes; verify removal and preserve other workloads. Missing state requires ownership recovery, except for the qualified stopped legacy case during an explicit `up`.
 
 Report the preview URL and version, verification results, and cleanup command or cleanup result.

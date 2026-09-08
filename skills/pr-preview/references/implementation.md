@@ -52,7 +52,7 @@ Store state in a private controller-owned location outside the source tree. Pers
 
 Keep directories/files private (for example modes 700/600). Use an atomic state update. Preserve the prior successful state until an update succeeds, and keep enough information to clean up failed creation. Plain structured data avoids executing a state file as shell code.
 
-Serialize `up` and `down` per slot; acquire the lock before reading mutable state or changing the checkout. Keep lock files outside state directories deleted by `down`. Following logs must not retain the mutation lock. If resources exist without matching state, stop rather than adopting them with a new database password. Verify the saved Docker target before logs or deletion: matching names on another daemon are not proof of ownership.
+Serialize `up` and `down` per slot; acquire the lock before reading mutable state or changing the checkout. Keep lock files outside state directories deleted by `down`. Following logs must not retain the mutation lock. For an explicit `up`, remove a stopped legacy preview before fresh creation only after proving the exact expected container set, consistent project labels, and matching preview-only volumes/networks. A running, incomplete, mismatched, or unverifiable set remains a refusal; never adopt its credentials or data. Verify the saved Docker target before logs or deletion: matching names on another daemon are not proof of ownership.
 
 `down` uses the saved configuration, not the current PR files. An explicitly disposable preview may use project-scoped `down --volumes --remove-orphans` after checking ownership and excluding shared/external resources. Do not use global prune commands. Keep user source changes. Document any retained worktrees, caches, and state-root requirements.
 
@@ -73,7 +73,8 @@ Validate these scenarios through the real CLI, using disposable Git repositories
 | HTTP 503, timeout, unhealthy service | Nonzero exit and useful diagnostics |
 | Remote unavailable, source moved/deleted | Saved logs and teardown still work |
 | Following logs while stopping | Teardown is not locked out |
-| Missing state, existing resources | Refusal without recreating or deleting them |
+| Stopped, fully labelled legacy preview without state | Only that exact disposable resource set is removed, then fresh state/start succeeds |
+| Running, incomplete, or mismatched resources without state | Refusal without deletion or recreation |
 | Changed PR Compose adds a host/socket mount | Rejection before executing that configuration |
 | Failed rebuild after a successful start | Last successful revision remains distinguishable |
 

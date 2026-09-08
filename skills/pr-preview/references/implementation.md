@@ -8,6 +8,7 @@ Read this when adding, adapting, or fixing a project's preview script. The servi
 | --- | --- | --- |
 | `up <PR-number>` | Fetch and verify PR head | Build the selected revision and start its preview |
 | `up <path>` | Read canonical local source, including dirty files | Start a local preview without editing those files |
+| `seed <selector> [profile]` | Saved state and a repository-declared seed provider | Populate only the running selected preview |
 | `logs <selector>` | Saved state only | Follow the existing preview's logs |
 | `down <selector>` | Saved state only | Delete only that preview's disposable resources |
 | `list` | State and Docker labels | Show source/version, URL, and observed status |
@@ -54,6 +55,12 @@ Keep directories/files private (for example modes 700/600). Use an atomic state 
 
 Serialize `up` and `down` per slot; acquire the lock before reading mutable state or changing the checkout. Keep lock files outside state directories deleted by `down`. Following logs must not retain the mutation lock. For an explicit `up`, remove a stopped legacy preview before fresh creation only after proving the exact expected container set, consistent project labels, and matching preview-only volumes/networks. A running, incomplete, mismatched, or unverifiable set remains a refusal; never adopt its credentials or data. Verify the saved Docker target before logs or deletion: matching names on another daemon are not proof of ownership.
 
+## Optional repository seed provider
+
+The preview tool owns isolation; the repository owns domain data. Do not create a generic dummy-data generator or put a repository's fixtures in this skill. A repository that needs review data may register fixed argument arrays for profiles such as `review` or `e2e`, for example `python manage.py seed_preview_data --profile review`. Store that registration with the trusted controller configuration, not in PR-controlled Compose files, and never execute a configuration string through a shell.
+
+Implement `seed <selector> [profile]` only after `up` has saved and verified the preview state. Invoke the selected fixed command through that saved Compose project (usually `compose exec` in the app service), then record profile, seed version, source SHA, timestamp, and result. Seed commands must be deterministic, idempotent, local to the preview database, and free of production data or credentials. If the repository has no provider, keep `up` available and report that the preview has empty data. An explicit reset may remove only the selected preview's disposable data volume before a fresh `up` and seed; it must never be implicit.
+
 `down` uses the saved configuration, not the current PR files. An explicitly disposable preview may use project-scoped `down --volumes --remove-orphans` after checking ownership and excluding shared/external resources. Do not use global prune commands. Keep user source changes. Document any retained worktrees, caches, and state-root requirements.
 
 ## Verification and regression cases
@@ -73,6 +80,9 @@ Validate these scenarios through the real CLI, using disposable Git repositories
 | HTTP 503, timeout, unhealthy service | Nonzero exit and useful diagnostics |
 | Remote unavailable, source moved/deleted | Saved logs and teardown still work |
 | Following logs while stopping | Teardown is not locked out |
+| Seed a declared review profile twice | Only the selected preview is populated; rerun does not duplicate records |
+| Seed unavailable | Preview remains usable and reports empty data |
+| Reset requested | Only the selected preview data is removed before fresh startup and seed |
 | Stopped, fully labelled legacy preview without state | Only that exact disposable resource set is removed, then fresh state/start succeeds |
 | Running, incomplete, or mismatched resources without state | Refusal without deletion or recreation |
 | Changed PR Compose adds a host/socket mount | Rejection before executing that configuration |

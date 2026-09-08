@@ -22,6 +22,7 @@ Prefer an existing project preview script after checking its source and ownershi
 - Use a trusted controller and reviewed Compose configuration. PR-supplied services, host mounts, privileges, networks, and build entitlements require an isolated execution boundary; an override does not remove them automatically.
 - Give each source a stable, distinct identity. Hash the full canonical path for local worktrees. Use loopback ports and preview-owned volumes/networks; refuse existing resources whose ownership cannot be established.
 - On an explicit `up`, a fully verified stopped legacy preview may be removed before fresh creation: require the exact expected containers, consistent Compose labels, and matching preview-only volume/network labels. Running, incomplete, or mismatched resources remain a refusal.
+- Keep domain test data in the repository, not this skill. A repository may expose `seed <selector> [profile]` after `up`; it runs a fixed, trusted seed command against only that preview's saved Compose configuration. Report an empty-data preview when no seed capability is declared.
 - Save private startup configuration and source metadata independently of the source tree. Serialize mutations of one preview. Track the last successfully started image separately from a failed update.
 
 ## Verify before handing over

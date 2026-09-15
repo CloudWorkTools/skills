@@ -1,6 +1,43 @@
 # CloudWorkTools Skills
 
-Reusable agent skills. The first skill, **pr-preview**, helps an agent create or operate an on-demand PR/worktree preview using a project's production build path.
+Reusable agent skills for production-like previews and technical teaching.
+
+| Skill | Purpose |
+| --- | --- |
+| [pr-preview](skills/pr-preview/SKILL.md) | Create or operate an on-demand PR/worktree preview using a project's production build path. |
+| [teaching-with-diagrams](skills/teaching-with-diagrams/SKILL.md) | Teach technical concepts through grounded explanations, practice and Mermaid diagrams. Combines reviewed practices from three upstream skills with update tracking. |
+
+## Teaching with diagrams
+
+Install the composite skill in your project:
+
+```bash
+npx --yes skills@1.5.24 add CloudWorkTools/skills --skill teaching-with-diagrams --agent codex --yes
+```
+
+Then ask:
+
+> 用 $teaching-with-diagrams，把這個模型的 README 整理成繁體中文初學者教材，加入 Mermaid 流程圖、數值例子與有解答的小練習，保留操作指南的入口。
+
+The skill combines **teach** (learning outcomes and practice), **documentation-writer** (Diátaxis structure) and **mermaid-diagrams** (visual explanation) into a self-contained adaptation. It supports one-off Markdown documents as well as an explicitly requested ongoing course. The three original skills do not need to be installed separately. See [composition, source links and maintenance decisions](skills/teaching-with-diagrams/references/composition.md).
+
+### Track upstream changes
+
+In this repository:
+
+```bash
+npm run skills:check-updates
+```
+
+After installing the skill, ask the agent to check its upstream updates, or run:
+
+```bash
+node .agents/skills/teaching-with-diagrams/scripts/check-upstreams.mjs
+```
+
+Node.js 22+ and GitHub network access are required. The checker compares each complete skill directory and root license with the reviewed baseline. It prints changes and compare links without modifying files. Exit codes are `0` unchanged, `2` updates available, and `1` check failure. `GH_TOKEN` or `GITHUB_TOKEN` is optional for authenticated API rate limits.
+
+[Check skill upstreams](https://github.com/CloudWorkTools/skills/actions/workflows/skill-upstreams.yml) runs every Monday at 03:17 UTC (11:17 Asia/Taipei) and can be run manually from Actions. Reports appear in the run's job summary; changes generate a warning. The workflow does not apply updates automatically. Follow the [review and adoption procedure](skills/teaching-with-diagrams/references/composition.md#review-and-adopt-an-update) before advancing the baseline. Schedule timing depends on GitHub Actions availability.
 
 ## Install with npm
 
@@ -45,11 +82,13 @@ Preview execution needs Git, Docker Compose, and a dedicated preview host/daemon
 
 - [pr-preview skill](skills/pr-preview/SKILL.md)
 - [Implementation contract](skills/pr-preview/references/implementation.md)
+- [Teaching with diagrams skill](skills/teaching-with-diagrams/SKILL.md)
+- [Teaching composition and update tracking](skills/teaching-with-diagrams/references/composition.md)
 
 ```bash
 npm test
 ```
 
-Node.js 22+ and npm are required for the install test. It packs the repository, installs the tarball into a temporary project, installs the skill through the real npm CLI, and verifies every skill resource is copied intact and discoverable. It leaves your user-level skills and Docker workloads untouched. Network access is needed to obtain the pinned CLI if it is not cached.
+Node.js 22+ and npm are required for the install tests. They pack the repository, install the tarball into temporary projects, install each skill through the real npm CLI, and verify every resource is copied intact and discoverable. Update-check tests cover reference changes, additions/deletions, license changes, unrelated commits and failed API calls. The tests leave user-level skills and Docker workloads untouched. Network access is needed to obtain the pinned CLI if it is not cached.
 
 The portable guidance was developed from the PR preview work in [MUAMS PR #71](https://github.com/ROCMCSpace/MUAMS/pull/71); MUAMS-specific service names, credentials, and deployment settings are not bundled.

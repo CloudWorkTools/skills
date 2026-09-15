@@ -1,0 +1,42 @@
+name: Check skill upstreams
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 3 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Compare reviewed sources with upstream
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set +e
+          node skills/teaching-with-diagrams/scripts/check-upstreams.mjs > "$RUNNER_TEMP/upstream-report.json" 2>&1
+          status=$?
+          set -e
+          {
+            echo '## Skill upstream report'
+            echo '```json'
+            cat "$RUNNER_TEMP/upstream-report.json"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$status" -eq 2 ]; then
+            echo '::warning::Upstream skill changes are available. Review the job summary.'
+          elif [ "$status" -ne 0 ]; then
+            echo '::error::Some upstream checks failed. Review the job summary.'
+            exit "$status"
+          fi

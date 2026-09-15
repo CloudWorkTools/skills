@@ -12,9 +12,10 @@ function npm(args, cwd) {
   return execFileSync('npm', args, { cwd, env, encoding: 'utf8', timeout: 180_000 });
 }
 
-test('npm package installs a complete, discoverable pr-preview skill', () => {
-  const source = join(root, 'skills/pr-preview');
-  assert.match(readFileSync(join(source, 'SKILL.md'), 'utf8'), /^---\nname: pr-preview\n/);
+for (const skill of ['pr-preview', 'teaching-with-diagrams']) {
+test(`npm package installs a complete, discoverable ${skill} skill`, () => {
+  const source = join(root, 'skills', skill);
+  assert.ok(readFileSync(join(source, 'SKILL.md'), 'utf8').startsWith(`---\nname: ${skill}\n`));
   const sandbox = mkdtempSync(join(tmpdir(), 'cloudworktools-skills-'));
   try {
     const project = join(sandbox, 'project');
@@ -24,8 +25,8 @@ test('npm package installs a complete, discoverable pr-preview skill', () => {
       join(sandbox, packed[0].filename)], project);
     const dependency = join(project, 'node_modules/@cloudworktools/skills');
     npm(['exec', '--yes', '--package=skills@1.5.24', '--', 'skills', 'add', dependency,
-      '--skill', 'pr-preview', '--agent', 'codex', '--copy', '--yes'], project);
-    const installed = join(project, '.agents/skills/pr-preview');
+      '--skill', skill, '--agent', 'codex', '--copy', '--yes'], project);
+    const installed = join(project, '.agents/skills', skill);
     function compare(directory, relative = '') {
       for (const entry of readdirSync(directory, { withFileTypes: true })) {
         const path = join(relative, entry.name);
@@ -36,8 +37,9 @@ test('npm package installs a complete, discoverable pr-preview skill', () => {
     compare(source);
     const listed = npm(['exec', '--yes', '--package=skills@1.5.24', '--',
       'skills', 'list', '--agent', 'codex', '--json'], project);
-    assert.match(listed, /pr-preview/);
+    assert.ok(listed.includes(skill));
   } finally {
     rmSync(sandbox, { recursive: true, force: true });
   }
 });
+}

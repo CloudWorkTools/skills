@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "reviewed_at": "2026-09-18",
+  "sources": [
+    {
+      "name": "crafting-effective-readmes",
+      "repo": "softaworks/agent-toolkit",
+      "path": "skills/crafting-effective-readmes",
+      "commit": "3027f20f3181758385a1bb8c022d4041dfb4de84",
+      "fingerprint": "335ea99a6c5fd35b28ce6df531a5493bc9add5e738418fb95f78911574a9d63b",
+      "license_sha": "fc473440ee9ae27aa3d774bcd3888496ef0fad2d"
+    },
+    {
+      "name": "value-proposition",
+      "repo": "phuryn/pm-skills",
+      "path": "pm-product-strategy/skills/value-proposition",
+      "commit": "8607e3b077817f89bf4a9b623246219734ac3be0",
+      "fingerprint": "706145f0030268bbd588124ae625c20847ee52cec27b825c36506e8af9d3441d",
+      "license_sha": "f6eca502b7f3fd6a3f0b024e4c98a3dcf5611cee"
+    },
+    {
+      "name": "documentation-writer",
+      "repo": "github/awesome-copilot",
+      "path": "skills/documentation-writer",
+      "commit": "4f4796f0bf30e105700f97ed8408c12b6aa95e06",
+      "fingerprint": "d490f3a64da5499783c93864a922cf343aafdccf51f40a8c4e9c40cff7f110fa",
+      "license_sha": "89bc5e962c9944cdb050887062afdaaf89be504a"
+    }
+  ]
+}

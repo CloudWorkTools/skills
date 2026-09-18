@@ -15,6 +15,10 @@ concurrency:
 jobs:
   check:
     if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    strategy:
+      fail-fast: false
+      matrix:
+        skill: [teaching-with-diagrams, readme-value]
     permissions:
       contents: write
       pull-requests: write
@@ -32,10 +36,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           UPSTREAM_ASSIGNEE: jhihweijhan
+          UPSTREAM_SKILL: ${{ matrix.skill }}
         shell: bash
         run: |
           set +e
-          node skills/teaching-with-diagrams/scripts/check-upstreams.mjs > "$RUNNER_TEMP/upstream-report.json" 2>&1
+          node "skills/$UPSTREAM_SKILL/scripts/check-upstreams.mjs" > "$RUNNER_TEMP/upstream-report.json" 2>&1
           status=$?
           set -e
           {

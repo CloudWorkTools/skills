@@ -1,6 +1,14 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { readFileSync } from 'node:fs';
 import { checkSource, exitCode, fingerprint } from '../skills/teaching-with-diagrams/scripts/check-upstreams.mjs';
+
+test('independently installed skills carry the same tested upstream checker', () => {
+  assert.deepEqual(
+    readFileSync(new URL('../skills/readme-value/scripts/check-upstreams.mjs', import.meta.url)),
+    readFileSync(new URL('../skills/teaching-with-diagrams/scripts/check-upstreams.mjs', import.meta.url)),
+  );
+});
 
 const sha = value => value.repeat(40);
 const entries = [

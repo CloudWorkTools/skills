@@ -2,12 +2,23 @@
 
 [繁體中文](README.zh-TW.md)
 
-Reusable agent skills for production-like previews and technical teaching.
+Reusable agent skills for production-like previews, technical teaching and clear project READMEs.
 
 | Skill | Purpose |
 | --- | --- |
 | [pr-preview](skills/pr-preview/SKILL.md) | Create or operate an on-demand PR/worktree preview using a project's production build path. |
 | [teaching-with-diagrams](skills/teaching-with-diagrams/SKILL.md) | Teach technical concepts through grounded explanations, practice and Mermaid diagrams. Combines reviewed practices from three upstream skills with update tracking. |
+| [readme-value](skills/readme-value/SKILL.md) | Help first-time visitors understand a project's use, evidence and next step, with concrete proposals when its value is still unproven. |
+
+## README value
+
+Install from this checkout with `npx --yes skills@1.5.24 add . --skill readme-value --agent codex --yes`, then ask:
+
+> 用 $readme-value 改善這個 repo 的 README，讓第一次來、沒有專業背景的人看懂用途、目前成果與如何開始。把深入技術內容放到延伸文件；價值還未驗證的部分，提出具體且標示為建議的未來工作。
+
+The skill adapts audience guidance from `crafting-effective-readmes`, benefit analysis from `value-proposition` and document organization from `documentation-writer`. It is independent of the teaching skill and includes its own upstream checker. See [sources, adaptations and maintenance](skills/readme-value/references/composition.md).
+
+Run `npm run skills:check-readme-updates` in this repository, or `node <skill-directory>/scripts/check-upstreams.mjs` after installation. The weekly workflow checks both skills independently. README updates use a separate Draft PR and `.github/upstream-reviews/readme-value.md`; source adoption requires review before advancing the baseline.
 
 ## Teaching with diagrams
 

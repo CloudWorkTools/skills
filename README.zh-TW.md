@@ -2,12 +2,23 @@
 
 [English](README.md) · 繁體中文
 
-可重複使用的 agent 技能，涵蓋接近正式環境的預覽與技術教學。
+可重複使用的 agent 技能，涵蓋接近正式環境的預覽、技術教學與清楚的專案 README。
 
 | 技能 | 用途 |
 | --- | --- |
 | [pr-preview](skills/pr-preview/SKILL.md) | 透過專案正式建置路徑，建立或操作按需啟動的 PR／worktree 預覽。 |
 | [teaching-with-diagrams](skills/teaching-with-diagrams/SKILL.md) | 以有根據的說明、練習與 Mermaid 圖解教授技術概念；整合三個上游技能，並追蹤其更新。 |
+| [readme-value](skills/readme-value/SKILL.md) | 讓第一次來訪的人看懂專案用途、成果證據與下一步；價值尚未驗證時，提出具體的未來工作建議。 |
+
+## README 價值表達
+
+在本機 checkout 執行 `npx --yes skills@1.5.24 add . --skill readme-value --agent codex --yes` 安裝，再提出要求：
+
+> 用 $readme-value 改善這個 repo 的 README，讓第一次來、沒有專業背景的人看懂用途、目前成果與如何開始。把深入技術內容放到延伸文件；價值還未驗證的部分，提出具體且標示為建議的未來工作。
+
+此技能採用 `crafting-effective-readmes` 的讀者判斷、`value-proposition` 的受益分析，以及 `documentation-writer` 的文件分工。它與教學技能可分別安裝，並附有自己的上游檢查器。詳見[來源、適配與維護](skills/readme-value/references/composition.md)。
+
+在 repository 執行 `npm run skills:check-readme-updates`，或在安裝後執行 `node <skill-directory>/scripts/check-upstreams.mjs`。每週排程分別檢查兩個技能；README 技能使用獨立的 Draft PR 與 `.github/upstream-reviews/readme-value.md`。上游內容經審查採用後，才更新基準。
 
 ## 圖解式教學
 

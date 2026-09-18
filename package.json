@@ -2,7 +2,7 @@
   "name": "@cloudworktools/skills",
   "version": "0.2.0",
   "private": true,
-  "description": "Agent skills for production-like previews and technical teaching with diagrams",
+  "description": "Agent skills for PR previews, technical teaching and clear project READMEs",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -11,7 +11,8 @@
   "files": ["skills/"],
   "scripts": {
     "test": "node --test tests/*.test.mjs",
-    "skills:check-updates": "node skills/teaching-with-diagrams/scripts/check-upstreams.mjs"
+    "skills:check-updates": "node skills/teaching-with-diagrams/scripts/check-upstreams.mjs",
+    "skills:check-readme-updates": "node skills/readme-value/scripts/check-upstreams.mjs"
   },
   "engines": { "node": ">=22" }
 }

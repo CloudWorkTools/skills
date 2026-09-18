@@ -21,20 +21,26 @@ test('deduplication ignores time and unrelated commits; malformed or failed chec
     await assert.rejects(publish(bad, options, () => assert.fail('no API call allowed')));
   }
   assert.match(await publish({ results: [{ status: 'current' }] }, options, () => assert.fail()), /No updates/);
+  await assert.rejects(publish(report, { ...options, skill: '../other' }, () => assert.fail('no API call allowed')), /Unknown upstream skill/);
 });
 
-test('creates a draft, updates only the report, reuses PR, and preserves closed/ready batches', async () => {
+for (const skill of ['teaching-with-diagrams', 'readme-value']) {
+test(`${skill}: creates a draft, updates only its report, and preserves closed/ready batches`, async () => {
+  const scopedOptions = { ...options, skill };
+  const reportPath = `.github/upstream-reviews/${skill}.md`;
+  const otherPrefix = skill === 'readme-value' ? 'automation/teaching-upstreams-' : 'automation/readme-value-upstreams-';
+  const otherPr = { number: 99, draft: false, head: { ref: `${otherPrefix}existing`, repo: { full_name: 'owner/repo' } } };
   let pr, content, closed = false, ready = false;
   const writes = [];
   const api = async (method, path, data) => {
     if (method !== 'GET') writes.push({ method, path, data });
     if (path === 'repos/owner/repo') return { default_branch: 'main' };
-    if (path.includes('state=open')) return pr && !closed ? [{ ...pr, draft: !ready }] : [];
+    if (path.includes('state=open')) return pr && !closed ? [otherPr, { ...pr, draft: !ready }] : [otherPr];
     if (path.includes('state=closed')) return closed ? [pr] : [];
     if (path.includes('/git/matching-refs/')) return [];
     if (path.endsWith('/commits/main')) return { sha: 'f'.repeat(40) };
     if (path.endsWith('/git/refs')) return {};
-    if (path.includes('/git/trees/')) return { tree: content ? [{ path: '.github/upstream-reviews/teaching-with-diagrams.md', sha: '1'.repeat(40) }] : [] };
+    if (path.includes('/git/trees/')) return { tree: content ? [{ path: reportPath, sha: '1'.repeat(40) }] : [] };
     if (path.includes('/git/blobs/')) return { content };
     if (path.includes('/contents/')) { content = data.content; return {}; }
     if (path.endsWith('/pulls')) {
@@ -45,20 +51,24 @@ test('creates a draft, updates only the report, reuses PR, and preserves closed/
     if (path.endsWith('/assignees')) return {};
     assert.fail(`Unexpected API: ${method} ${path}`);
   };
-  await publish(report, options, api);
+  await publish(report, scopedOptions, api);
   assert.equal(pr.draft, true);
+  assert.ok(!pr.head.ref.startsWith(otherPrefix));
+  assert.match(Buffer.from(content, 'base64').toString('utf8'), skill === 'readme-value' ? /README 價值技能/ : /教學技能/);
+  assert.ok(writes.filter(w => w.method === 'PUT').every(w => w.path.endsWith(`/contents/${reportPath}`)));
   assert.equal(writes.filter(w => w.path.endsWith('/pulls')).length, 1);
   writes.length = 0;
-  await publish(report, options, api);
+  await publish(report, scopedOptions, api);
   assert.equal(writes.filter(w => w.method === 'PUT' || w.path.endsWith('/pulls')).length, 0);
-  await publish({ results: [{ ...update, latest_fingerprint: 'f'.repeat(64) }] }, options, api);
+  await publish({ results: [{ ...update, latest_fingerprint: 'f'.repeat(64) }] }, scopedOptions, api);
   assert.equal(writes.filter(w => w.method === 'PUT').length, 1);
-  assert.ok(writes.filter(w => w.method === 'PUT').every(w => w.path.endsWith('/contents/.github/upstream-reviews/teaching-with-diagrams.md') && w.data.sha));
+  assert.ok(writes.filter(w => w.method === 'PUT').every(w => w.path.endsWith(`/contents/${reportPath}`) && w.data.sha));
   ready = true;
   writes.length = 0;
-  assert.match(await publish(report, options, api), /under review/);
+  assert.match(await publish(report, scopedOptions, api), /under review/);
   assert.equal(writes.length, 0);
   closed = true;
-  assert.match(await publish(report, options, api), /already closed/);
+  assert.match(await publish(report, scopedOptions, api), /already closed/);
   assert.equal(writes.length, 0);
 });
+}

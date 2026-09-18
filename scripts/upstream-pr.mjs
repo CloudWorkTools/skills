@@ -4,10 +4,17 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const prefix = 'automation/teaching-upstreams-';
-const reportPath = '.github/upstream-reviews/teaching-with-diagrams.md';
+function target(skill) {
+  if (!['teaching-with-diagrams', 'readme-value'].includes(skill)) throw new Error('Unknown upstream skill');
+  return {
+    prefix: skill === 'teaching-with-diagrams' ? 'automation/teaching-upstreams-' : 'automation/readme-value-upstreams-',
+    reportPath: `.github/upstream-reviews/${skill}.md`,
+    label: skill === 'teaching-with-diagrams' ? '教學技能' : 'README 價值技能',
+  };
+}
 
-export function proposal(report) {
+export function proposal(report, skill = 'teaching-with-diagrams') {
+  const { label } = target(skill);
   if (!Array.isArray(report.results) || !report.results.length ||
       report.results.some(r => !['current', 'update-available'].includes(r.status))) {
     throw new Error('Incomplete upstream check; no PR changes made');
@@ -26,14 +33,14 @@ export function proposal(report) {
   // Ignore timestamps and unrelated upstream commits when deduplicating notifications.
   const signature = createHash('sha256').update(JSON.stringify(updates.map(r =>
     [r.name, r.reviewed_commit, r.latest_fingerprint, r.latest_license_sha]))).digest('hex');
-  const text = `<!-- upstream-batch:${signature} -->\n# 待審查的教學技能上游更新\n\n` +
+  const text = `<!-- upstream-batch:${signature} -->\n# 待審查的${label}上游更新\n\n` +
     '這是更新通知，不是已完成的技能整合。請勿只合併報告就視為完成更新。\n\n' +
     updates.map(r => `## ${r.name}\n\n變更：${r.changes.join(', ')}\n\n` +
       `[來源快照](${r.source}) · [差異比較（整個上游 repo）](${r.compare})\n\n` +
       `- 已審查版本：\`${r.reviewed_commit}\`\n- 待審查版本：\`${r.latest_commit}\`\n` +
       `- 目錄 fingerprint：\`${r.latest_fingerprint}\`\n- 授權 SHA：\`${r.latest_license_sha}\`\n`).join('\n') +
     '\n## 人工整合清單\n\n- [ ] 閱讀相關目錄與授權差異，決定採用或略過，記錄理由。\n' +
-    '- [ ] 適配本地教學技能，保留刻意設計的差異。\n- [ ] 驗證 Mermaid、文件連結及 npm test。\n' +
+    `- [ ] 適配本地${label}，保留刻意設計的差異。\n- [ ] 驗證技能的行為案例、適用的圖表、文件連結及 npm test。\n` +
     '- [ ] 僅將確實審查過的版本更新到 lock、來源連結及授權聲明。\n' +
     '- [ ] 再檢查上游是否有新變更，完成後才將 PR 標為 Ready for review。\n';
   return { signature, text };
@@ -47,8 +54,9 @@ async function github(method, endpoint, data) {
   }) || 'null');
 }
 
-export async function publish(report, { repo, assignee }, api = github) {
-  const item = proposal(report);
+export async function publish(report, { repo, assignee, skill = 'teaching-with-diagrams' }, api = github) {
+  const { prefix, reportPath, label } = target(skill);
+  const item = proposal(report, skill);
   if (!item) return 'No updates; no PR needed';
   if (!/^[\w.-]+\/[\w.-]+$/.test(repo) || !/^[\w-]+$/.test(assignee)) throw new Error('Invalid repository or assignee');
   const root = `repos/${repo}`;
@@ -83,11 +91,11 @@ export async function publish(report, { repo, assignee }, api = github) {
     unchanged = Buffer.from(blob.content, 'base64').toString('utf8').startsWith(`<!-- upstream-batch:${item.signature} -->`);
   }
   if (!unchanged) await api('PUT', `${root}/contents/${reportPath}`, {
-    message: 'docs: report pending teaching skill upstream updates', branch,
+    message: `docs: report pending ${skill} upstream updates`, branch,
     content: Buffer.from(item.text).toString('base64'), ...(file ? { sha: file.sha } : {}),
   });
   const pr = open || await api('POST', `${root}/pulls`, {
-    title: '教學技能上游更新：待人工整合', head: branch, base: metadata.default_branch, draft: true,
+    title: `${label}上游更新：待人工整合`, head: branch, base: metadata.default_branch, draft: true,
     body: `@${assignee} 發現上游更新，是否要採用？\n\n` +
       `請查看本 PR 的 \`${reportPath}\`，內含差異連結與審查清單。\n\n` +
       '這個 Draft PR **只有更新報告**，尚未修改技能或已審查版本。請先完成內容整合與測試，再決定合併；不採用可直接關閉。\n\n' +
@@ -99,5 +107,6 @@ export async function publish(report, { repo, assignee }, api = github) {
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const report = JSON.parse(await readFile(process.argv[2], 'utf8'));
-  console.log(await publish(report, { repo: process.env.GITHUB_REPOSITORY, assignee: process.env.UPSTREAM_ASSIGNEE }));
+  console.log(await publish(report, { repo: process.env.GITHUB_REPOSITORY, assignee: process.env.UPSTREAM_ASSIGNEE,
+    skill: process.env.UPSTREAM_SKILL }));
 }

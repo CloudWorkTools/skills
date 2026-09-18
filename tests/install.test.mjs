@@ -12,7 +12,7 @@ function npm(args, cwd) {
   return execFileSync('npm', args, { cwd, env, encoding: 'utf8', timeout: 180_000 });
 }
 
-for (const skill of ['pr-preview', 'teaching-with-diagrams']) {
+for (const skill of ['pr-preview', 'teaching-with-diagrams', 'readme-value']) {
 test(`npm package installs a complete, discoverable ${skill} skill`, () => {
   const source = join(root, 'skills', skill);
   assert.ok(readFileSync(join(source, 'SKILL.md'), 'utf8').startsWith(`---\nname: ${skill}\n`));

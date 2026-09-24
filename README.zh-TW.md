@@ -2,13 +2,18 @@
 
 [English](README.md) · 繁體中文
 
-可重複使用的 agent 技能，涵蓋接近正式環境的預覽、技術教學與清楚的專案 README。
+可重複使用的 agent 技能，涵蓋預覽、技術教學、專案文件與客戶報價。
 
 | 技能 | 用途 |
 | --- | --- |
 | [pr-preview](skills/pr-preview/SKILL.md) | 透過專案正式建置路徑，建立或操作按需啟動的 PR／worktree 預覽。 |
 | [teaching-with-diagrams](skills/teaching-with-diagrams/SKILL.md) | 以有根據的說明、練習與 Mermaid 圖解教授技術概念；整合三個上游技能，並追蹤其更新。 |
 | [readme-value](skills/readme-value/SKILL.md) | 讓第一次來訪的人看懂專案用途、成果證據與下一步；價值尚未驗證時，提出具體的未來工作建議。 |
+| [client-quotation](skills/client-quotation/SKILL.md) | 製作服務報價單與對應的白話功能規劃附件，附可編輯的空白 ODT 範本。 |
+
+## 客戶報價
+
+使用 `npx --yes skills@1.5.24 add CloudWorkTools/skills --skill client-quotation --agent codex --yes` 安裝。用 `$client-quotation` 製作共用編號的報價單與功能規劃附件，清楚列出付款階段，以及開發期間的 UI 示範、溝通與約定調整。附帶的 ODT 範本只有欄位提示，交付客戶前需填入已授權的專案資料。
 
 ## README 價值表達
 

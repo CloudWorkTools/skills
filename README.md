@@ -2,13 +2,18 @@
 
 [繁體中文](README.zh-TW.md)
 
-Reusable agent skills for production-like previews, technical teaching and clear project READMEs.
+Reusable agent skills for previews, technical teaching, project documentation and client quotations.
 
 | Skill | Purpose |
 | --- | --- |
 | [pr-preview](skills/pr-preview/SKILL.md) | Create or operate an on-demand PR/worktree preview using a project's production build path. |
 | [teaching-with-diagrams](skills/teaching-with-diagrams/SKILL.md) | Teach technical concepts through grounded explanations, practice and Mermaid diagrams. Combines reviewed practices from three upstream skills with update tracking. |
 | [readme-value](skills/readme-value/SKILL.md) | Help first-time visitors understand a project's use, evidence and next step, with concrete proposals when its value is still unproven. |
+| [client-quotation](skills/client-quotation/SKILL.md) | Prepare a service quotation and matching plain-language scope attachment; includes blank editable ODT templates. |
+
+## Client quotations
+
+Install with `npx --yes skills@1.5.24 add CloudWorkTools/skills --skill client-quotation --agent codex --yes`. Use `$client-quotation` to draft or revise a quotation and scope attachment that share one identifier, show payment milestones clearly, and describe UI review and agreed adjustments. The bundled ODT templates contain field prompts only; replace them with authorized project details before delivery.
 
 ## README value
 

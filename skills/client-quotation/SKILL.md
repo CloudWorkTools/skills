@@ -15,6 +15,13 @@ Create a quotation a client can approve and a scope attachment a nontechnical re
 - State whether the price is tax exclusive or inclusive. Recalculate subtotal, tax, total, and each payment milestone; if the user gives only a project total, avoid inventing prices for individual features. Specify each milestone's trigger and amount.
 - For invoice timing or tax treatment, check current official rules for the relevant jurisdiction before advising. Record the agreed billing wording in the quotation, without treating a template as legal or accounting authority.
 
+## Express revisions against the preceding version
+
+- Mark each scope attachment with its version, date, shared quotation/order identifier, and whether it is the current scope or a historical baseline. Version 1 explicitly says it has no preceding version; keep its original scope available for comparison.
+- From version 2 onward, include a prominent comparison with the *immediately preceding* version. For each material change, name the affected feature, label it added, changed, or removed, and state the previous and current client-visible behavior. Mention material items that carry forward when that prevents confusion.
+- Make the current version a complete, standalone scope for approval. Highlight changed passages with bold or color while keeping the change type and old/new wording readable without color. Preserve earlier version files and use distinct versioned filenames; identify which version governs acceptance.
+- Apply the same version wording to the editable ODT, review PDF, and any linked issue or quotation reference. The version comparison is explanatory; the full current scope is authoritative.
+
 ## Explain the scope in the client's language
 
 Describe what visitors can see and do, what staff can change in the admin UI, and what system or data changes make those actions possible. Pair each behind-the-scenes change with a concrete benefit, such as fewer duplicate entries or preserving existing links. State who supplies copy and media, what counts as acceptance, and material exclusions.

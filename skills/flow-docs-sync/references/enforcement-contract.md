@@ -15,6 +15,40 @@ Use this contract to design or audit a project's checker. These are requirements
 
 A thumbnail is a preview; searchable text and normal links remain available to agents. Declare the diagram format and rendering command. Diagram clicks alone are insufficient navigation because viewer support varies.
 
+## Project instructions and pre-edit reading
+
+Adoption includes both a complete baseline for the claimed scope and an explicit root `AGENTS.md` rule. Install the rule after the referenced overview, manifest and policy exist. Preserve existing instructions and resolve nested instructions that could hide or conflict with it. Use a tracked policy as the shared owner; when root instructions are local-only, write the local pointer without committing that file and document the bootstrap required in other workspaces.
+
+Adapt this template to actual, verified paths. The angle-bracket paths below are examples to replace, not a finished instruction file:
+
+```markdown
+## Mandatory flow-documentation synchronization
+
+Before adding, modifying, refactoring, moving or deleting code or behavior-bearing
+configuration, templates, dependencies or deployment inputs:
+1. Read [flow overview](<actual-overview-path>) and
+   [source/feature manifest](<actual-manifest-path>).
+2. Read every affected feature flow, shared subflow and linked contract.
+   Use both old and current mappings; existing-file edits and new functions
+   or branches are included. Source inspection to establish impact is allowed.
+3. Follow [the project synchronization policy](<actual-policy-path>).
+   Build missing source-verified flow baselines before dependent code edits;
+   unreadable required documentation blocks those edits. For new capabilities,
+   document the intended flow before implementation and label it as proposed.
+4. Update affected flows, mappings, source MD5s and evidence in the same change.
+   Run the required checks and obtain current independent semantic review.
+5. Include the relevant rule and document references in delegated work and
+   handoffs. Each agent reads its affected documents before source edits;
+   recheck the read set when scope or inputs change or work resumes.
+Do not declare completion with unresolved coverage or required checks missing.
+```
+
+The tracked policy owns the project's snapshot rules, exact validation commands, reviewer requirements and unresolved limitations. Instructions remain usable when the skill is unavailable; installed `flow-docs-sync` supplies the adoption/maintenance workflow. Link this policy from the other instruction entrypoints actually configured for the project's agents. Verify the links and discovery behavior for those entrypoints instead of assuming every tool reads `AGENTS.md`.
+
+Maintain a task read set using existing task evidence: document paths/content identities and affected feature IDs. This is a declared reading trace, not proof of comprehension. CI may check required instruction links, inventory coverage and evidence identities; a claimed read flag or matching document hash cannot establish that an agent read or understood the document. Required review and merge checks remain the independent controls on delivered changes.
+
+The baseline inventory must account for all first-party code and behavior-bearing logic inputs when claiming whole-project adoption. Narrow exclusions require reasons and review; excluding first-party behavioral logic leaves a coverage gap rather than establishing whole-project adoption. A partial rollout, local-only instruction setup or remaining undocumented behavior must be reported as incomplete whole-project adoption.
+
 ## Inventory and impact
 
 - Enumerate the candidate's tracked inputs independently of its mapping manifest. Require every in-scope input to have an explicit mapping or a reviewed, narrow exclusion. A broad directory match cannot silently classify new code as documented.
@@ -60,11 +94,16 @@ Read repository CI rules before implementation. Where image integration or deplo
 
 ## Acceptance fixtures
 
-Run these as isolated temporary Git fixtures using the real project checker, not mocked “success” values. The semantic cases require both mechanical results and independent review evidence; test those distinct responsibilities. Every negative fixture names its expected rejection.
+Run mechanical cases with the real project checker in isolated temporary Git fixtures, not mocked “success” values. Run agent-reading cases as isolated agent scenarios and inspect document-read/source-edit ordering; read-set declarations alone do not establish compliance. Keep semantic review evidence separate. Every negative fixture names its expected rejection.
 
 | Candidate change | Expected result |
 | --- | --- |
 | Valid baseline, then correct flow/source update with current review | Pass within declared scope |
+| Install skill without adopting root project instructions and baseline | Report installation only; whole-project adoption remains incomplete |
+| Root instruction absent, dangling, shadowed or undiscoverable to a configured agent | Reject reading-rule adoption; repair instruction discovery |
+| Agent asked to delete or refactor a mapped function before reading its flow | Read overview/manifest and affected flows before edits; require current task read set |
+| Required flow missing, stale or unreadable | Establish source-verified baseline or block dependent edits; report gap |
+| New capability, delegated task or changed scope inside an existing file | Read relevant flows first, extend the intended flow and refresh affected read sets |
 | Source changes with no updated source digest | Reject stale MD5 |
 | Rehash plus whitespace edit or unsupported “no impact” claim | Mechanical integrity may pass; semantic gate rejects missing adequate independent review |
 | Remove an old mapping or narrow scope while changing its source | Preserve old affected features; reject missing removal/scope review |

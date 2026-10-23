@@ -18,7 +18,7 @@ Install with `npx --yes skills@1.5.24 add CloudWorkTools/skills --skill flow-doc
 
 > Use $flow-docs-sync to establish a system overview and per-feature flows with source-file/symbol navigation. Make synchronous updates mandatory and verify the project's CI and merge controls.
 
-The skill covers source MD5 records, both-version impact mapping, new entrypoints inside existing files, content-bound independent review and generated views. Its [enforcement contract](skills/flow-docs-sync/references/enforcement-contract.md) specifies checks and adversarial acceptance cases for a project-specific checker. Installing the skill does not install a checker, enable CI or change merge settings. Hash agreement detects content consistency; semantic accuracy still requires review and relevant tests.
+The skill covers source MD5 records, both-version impact mapping, new entrypoints inside existing files, content-bound independent review and generated views. Adoption requires a root `AGENTS.md` rule directing agents to read the overview, manifest and affected flows before any source addition, modification, refactor, move or deletion. Its [enforcement contract](skills/flow-docs-sync/references/enforcement-contract.md) specifies checks and adversarial acceptance cases for a project-specific checker. Installing the skill does not adopt project instructions, install a checker, enable CI or change merge settings. Hash agreement detects content consistency; semantic accuracy still requires review and relevant tests.
 
 ## Client quotations
 

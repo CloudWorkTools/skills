@@ -1,6 +1,6 @@
 ---
 name: flow-docs-sync
-description: Use when establishing system or feature flowcharts with source-code navigation, enforcing diagram/documentation synchronization in CI, or changing behavior in a project that has adopted mandatory flow documentation.
+description: Use when establishing system or feature flowcharts with source-code navigation, requiring agents to read flow documents before code changes, enforcing documentation synchronization in CI, or adding, modifying, refactoring, moving or deleting code in an adopted project.
 license: MIT
 ---
 
@@ -18,6 +18,14 @@ Use the project's existing documentation and diagram format. Read local instruct
 
 Read [the enforcement contract](references/enforcement-contract.md) when establishing or auditing controls, changing mappings or checker policy, or interpreting a failed gate. It owns the data requirements and acceptance cases.
 
+## Mandatory reading before source edits
+
+On every task that adds, modifies, refactors, moves or deletes code or behavior-bearing inputs, first read the project's root `AGENTS.md`, flow overview and scope/source manifest. Resolve the affected features, then read their canonical flows, shared subflows and linked contracts before editing. Reading source to establish impact is allowed. Record the document paths/content identities and affected feature IDs in the task's existing evidence or handoff.
+
+For a new capability, read related flows and document the proposed flow before implementation; distinguish it from existing behavior. When a required flow is absent or stale, establish its minimal source-verified baseline first. An unreadable required document blocks dependent source edits; continue only work that does not rely on it and report the gap. Re-read affected documents after a scope change or changed input. Each delegated agent must receive the applicable rule and resolve/read its own relevant documents. After resuming from a handoff or compaction, check that the read set is current before further edits.
+
+During adoption, write the hard rule into root `AGENTS.md` using the contract's project-instruction template with verified project paths. Link the same policy from other agent instruction entrypoints actually used by the project. Skill installation alone does not perform this adoption. If instructions are local-only, preserve that boundary and report shared-workspace adoption incomplete until the bootstrap is configured.
+
 ## Required workflow
 
 1. **Pin scope and snapshot.** Identify the reviewed base and exact candidate contents. Inventory user functions and their UI, API, CLI and background entrypoints. Include behavior-bearing templates, configuration, dependencies and build/deploy inputs. Record exclusions with reasons and unresolved coverage. Classify remote configuration and external behavior separately. Worktree, index and committed-tree verification are distinct; state which was checked.
@@ -29,7 +37,7 @@ Read [the enforcement contract](references/enforcement-contract.md) when establi
 
 ## Enforcement and completion
 
-When implementing adoption, install project-specific deterministic checks using existing tools. Add an agent-instruction pointer and contributor rule where authorized; preserve local files and do not commit private deployment data. Determine the repository's required-check and review settings through read-only inspection where available. Modify remote settings, publish, deploy or send messages only within existing authorization.
+When implementing adoption, install project-specific deterministic checks using existing tools and add the contributor rule alongside the mandatory project instructions. Preserve local files and do not commit private deployment data. Determine the repository's required-check and review settings through read-only inspection where available. Modify remote settings, publish, deploy or send messages only within existing authorization.
 
 A merge gate must require a successful result for the actual candidate plus its required review. Missing, pending or skipped results are unverified. Preserve protections for untrusted fork code; use the project's safe manual path instead. Checker, manifest scope and workflow changes require independent review and fixed failing fixtures.
 
@@ -38,6 +46,7 @@ Report each state with evidence or an explicit incomplete reason:
 | State | Evidence required |
 | --- | --- |
 | Skill created | Valid skill package and exercised usage scenarios |
+| Agent reading rule adopted | Root `AGENTS.md` rule, valid document links and verified discovery in the project's actual agent entrypoints |
 | Documentation adopted | Feature/input inventory, verified flows and mappings, named gaps |
 | Checker verified | Positive and adversarial negative fixtures executed |
 | CI executed | Candidate identity, command/run and result |

@@ -10,6 +10,15 @@
 | [teaching-with-diagrams](skills/teaching-with-diagrams/SKILL.md) | 以有根據的說明、練習與 Mermaid 圖解教授技術概念；整合三個上游技能，並追蹤其更新。 |
 | [readme-value](skills/readme-value/SKILL.md) | 讓第一次來訪的人看懂專案用途、成果證據與下一步；價值尚未驗證時，提出具體的未來工作建議。 |
 | [client-quotation](skills/client-quotation/SKILL.md) | 製作服務報價單與對應的白話功能規劃附件，附可編輯的空白 ODT 範本。 |
+| [flow-docs-sync](skills/flow-docs-sync/SKILL.md) | 建立可定位程式的系統與功能流程圖，制定來源、流程圖及核對紀錄同步更新的硬性規則。 |
+
+## 流程圖與程式同步
+
+使用 `npx --yes skills@1.5.24 add CloudWorkTools/skills --skill flow-docs-sync --agent codex --yes` 安裝，再提出要求：
+
+> 用 $flow-docs-sync 建立系統總覽、每個功能的流程圖與程式檔／函式定位；把同步更新列為硬性規則，並驗證這個專案的 CI 與合併管制。
+
+技能涵蓋來源 MD5、變更前後映射、既有檔案新增入口、綁定內容的獨立審查與衍生圖更新。[驗收契約](skills/flow-docs-sync/references/enforcement-contract.md)列出專案檢查器應實作的檢查與對抗案例。安裝技能不會自動建立檢查器、啟用 CI 或變更合併設定；MD5 相符只能確認內容一致性，流程語意仍需審查與相關測試。
 
 ## 客戶報價
 

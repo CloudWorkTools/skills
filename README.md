@@ -10,6 +10,15 @@ Reusable agent skills for previews, technical teaching, project documentation an
 | [teaching-with-diagrams](skills/teaching-with-diagrams/SKILL.md) | Teach technical concepts through grounded explanations, practice and Mermaid diagrams. Combines reviewed practices from three upstream skills with update tracking. |
 | [readme-value](skills/readme-value/SKILL.md) | Help first-time visitors understand a project's use, evidence and next step, with concrete proposals when its value is still unproven. |
 | [client-quotation](skills/client-quotation/SKILL.md) | Prepare a service quotation and matching plain-language scope attachment; includes blank editable ODT templates. |
+| [flow-docs-sync](skills/flow-docs-sync/SKILL.md) | Create navigable system/feature flows and establish mandatory source, diagram and review synchronization controls. |
+
+## Flow documentation synchronization
+
+Install with `npx --yes skills@1.5.24 add CloudWorkTools/skills --skill flow-docs-sync --agent codex --yes`, then ask:
+
+> Use $flow-docs-sync to establish a system overview and per-feature flows with source-file/symbol navigation. Make synchronous updates mandatory and verify the project's CI and merge controls.
+
+The skill covers source MD5 records, both-version impact mapping, new entrypoints inside existing files, content-bound independent review and generated views. Its [enforcement contract](skills/flow-docs-sync/references/enforcement-contract.md) specifies checks and adversarial acceptance cases for a project-specific checker. Installing the skill does not install a checker, enable CI or change merge settings. Hash agreement detects content consistency; semantic accuracy still requires review and relevant tests.
 
 ## Client quotations
 

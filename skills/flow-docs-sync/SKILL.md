@@ -18,7 +18,11 @@ Read local instructions and terminology first; reuse the project's documentation
 
 ## Mandatory bootstrap, available in this file
 
-During adoption, write this block into root `AGENTS.md` and link it from the other agent entrypoints actually used, including `CLAUDE.md` when applicable. Replace the paths and checker command with verified project locations. Preserve existing instructions and local-only files. Establish missing document baselines before enabling their pointers.
+During adoption, keep the shared synchronization rule in root `AGENTS.md` as its single source of truth. Replace the paths and checker command with verified project locations. Preserve existing instructions and local-only files. Establish missing document baselines before enabling their pointers.
+
+When the actual Claude Code session discovers `AGENTS.md` directly, do not create `CLAUDE.md`. If root `CLAUDE.md` already exists, preserve its content and add a missing `@AGENTS.md` import; `.claude/CLAUDE.md` uses `@../AGENTS.md`. Imports resolve relative to their containing file; an ordinary Markdown link does not load instructions. For sessions without direct support, use a minimal import entrypoint as a compatibility fallback. Keep the rule itself in `AGENTS.md`.
+
+Preserve `CLAUDE.local.md`: it can switch default discovery away from `AGENTS.md`, as can relevant ancestor instruction files. Verify imports or the session's effective instruction-file setting, including nested scopes and other tools; report discovery unverified when it was not observed. See the [entrypoint matrix](references/enforcement-contract.md#agent-entrypoint-discovery) for version conditions and verification.
 
 ```markdown
 ## [MANDATORY] Flow Documentation Sync Gate
@@ -43,14 +47,69 @@ This block is usable without a reference file or installed skill. For new capabi
 
 If an optional packaged resource is missing, retain this rule, verify the installed package and recover the matching resource from the skill's managed source. Report tooling incomplete; missing tooling does not authorize bypassing it or require stopping unrelated work.
 
+## Adopt workflow
+
+1. **Assign document responsibility.** Inventory existing requirements, architecture, contracts and flows; record their real paths and owners in the existing documentation index. Requirements/contracts define intended behavior; source review establishes actual behavior. Record conflicts before changing the owning document instead of duplicating it.
+2. **Choose a bounded scope.** Start with a core end-to-end feature plus its shared dependencies and behavioral inputs. List excluded and unknown areas as coverage gaps; partial adoption cannot claim whole-project coverage. Follow the [adoption inventory](references/enforcement-contract.md#adoption-inventory-and-staged-rollout).
+3. **Establish the baseline.** Select explicit source modes, register sources/symbols and feature dependencies, then create the overview, flows and manifest. Reuse existing documents and source-discovery tools. Refresh registered fingerprints and obtain initial reviews against the real comparison base before claiming a passing baseline.
+4. **Install and verify.** Adopt the inline bootstrap and check actual discovery/read-before-edit ordering. Copy the complete checker tools, compose with existing hooks, run candidate-specific checks and verify required CI/merge settings. Preserve project-specific validation; absent execution evidence remains unverified.
+5. **Report each gate.** Use the [completion report](references/enforcement-contract.md#completion-report) and [runtime evidence template](references/enforcement-contract.md#runtime-evidence-template). Expand the adopted scope with its dependencies through another reviewed change; retain the same gates within the adopted scope.
+
 ## Maintain workflow
 
 1. **Read and pin.** Read root instructions, overview, manifest, affected flows and shared contracts. Identify the comparison base and exact worktree, staged or committed candidate. Re-read after expanding scope.
 2. **Compute impact.** Use the union of base/candidate mappings, including removed records, new files and new symbols in existing files. Follow explicit dependent-feature links. Review scope reductions and policy/checker changes separately. Uncertain dependencies use conservative file-level coverage.
 3. **Synchronize.** Update flow sources, mappings and evidence. Run `snapshot` to refresh explicitly registered inputs; it does not register unknown code or approve behavior. Native Python and optional multi-language Tree-sitter adapters normalize syntax while retaining semantic tokens/directives. Module context changes affect all features mapped to that file; symbol-body changes affect mapped features and declared dependents. Keep raw MD5 for file-byte integrity. Unsupported syntax or uncertain dynamic dependencies use explicit file-level coverage rather than an invented symbol match.
-4. **Review automatically.** When affected behavior changes, obtain each feature's fingerprint, then dispatch a fresh reviewer with no conversation history using [the reviewer prompt](references/reviewer-prompt.md). Supply raw base/candidate sources, diff, flows, mappings, policy and tests, including relevant dependencies. The reviewer may request more source. Save its structured result as an evidence file and add the matching manifest review entry. This is an independent agent review record, not a cryptographic signature or repository human approval. Use at most two fix/review rounds per review request, then report unresolved findings. When subagents are unavailable, independent review is incomplete; continue safe work and report the missing gate rather than inventing approval.
+4. **Review automatically.** When feature fingerprints identify affected synchronization obligations, obtain each affected feature's fingerprint, then dispatch a fresh reviewer with no conversation history using [the reviewer prompt](references/reviewer-prompt.md). Supply raw base/candidate sources, diff, flows, mappings, policy and tests, including relevant dependencies. The reviewer may request more source. Save its structured result as an evidence file and add the matching manifest review entry. This is an independent agent review record, not a cryptographic signature or repository human approval. Use at most two fix/review rounds per review request, then report unresolved findings. When subagents are unavailable, independent review is incomplete; continue safe work and report the missing gate rather than inventing approval.
 5. **Check.** Run the bundled checker on the actual candidate, relevant behavioral tests and applicable project integration/deployment checks. For staged hooks use `--staged`; testing worktree bytes does not validate the index. Reject stale reviews when reviewed sources, flows, mappings, dependencies, base or policy change. Keep result records outside their own fingerprints.
-6. **Report states.** Distinguish skill installed, reading rule adopted, documentation coverage, structural checker passed, agent semantic review, human/merge requirements and visual inspection. Missing/skipped candidate checks remain unverified.
+6. **Report states.** Use the [completion report](references/enforcement-contract.md#completion-report) to distinguish installation, rule discovery, observed read ordering, coverage, structural checks, semantic review, behavior/visual evidence and human/merge requirements. Missing/skipped checks remain unverified; a structural pass does not establish semantic correctness or reviewer authenticity.
+
+## Change filtering and synchronization gate
+
+Local syntax/hash comparison identifies affected features before requesting semantic review. Ordinary source comments and formatting in supported AST modes only need byte-fingerprint refresh when normalized syntax and other bound inputs are unchanged. Keep their flows unchanged and create no new semantic-review obligation; still read before editing and run candidate checks.
+
+```mermaid
+flowchart TD
+    A["Read affected flows before editing;<br/>pin the actual base and candidate"]
+    B["Edit sources or behavioral inputs;<br/>snapshot registered fingerprints"]
+    C{"Inventory, mappings and<br/>diagram syntax valid?"}
+    D["Compare normalized syntax, flows,<br/>mappings and policy;<br/>follow declared feature dependencies"]
+    E{"Any affected features?"}
+    F["REUSE: keep flows;<br/>no new semantic-review obligation"]
+    G["Inspect affected features and full context;<br/>sync flows or justify unchanged flows"]
+    H["Independent semantic review;<br/>bind evidence to feature fingerprint"]
+    I{"Coverage, hashes, affected reviews<br/>and required candidate checks pass?"}
+    J["BLOCK: missing or stale inputs/reviews,<br/>unsupported syntax or failed checks"]
+    K["Structural gate passed;<br/>report review, tests and merge controls separately"]
+    A --> B
+    B --> C
+    C -->|No| J
+    C -->|Yes| D
+    D --> E
+    E -->|No| F
+    E -->|Yes| G
+    F --> I
+    G --> H
+    H --> I
+    I -->|No| J
+    I -->|Yes| K
+    classDef mechanical fill:#dbeafe,stroke:#1d4ed8,color:#172554
+    classDef reuse fill:#dcfce7,stroke:#15803d,color:#14532d
+    classDef affected fill:#fef3c7,stroke:#a16207,color:#713f12
+    classDef review fill:#f3e8ff,stroke:#7e22ce,color:#581c87
+    classDef blocked fill:#fee2e2,stroke:#b91c1c,color:#7f1d1d
+    class A,B,C,D,I mechanical
+    class F,K reuse
+    class E,G affected
+    class H review
+    class J blocked
+```
+
+Blue blocks cover preparation and mechanical comparison/validation; green blocks avoid unnecessary redraws or report structural success. Amber limits work to affected features, purple requires independent review, and red blocks incomplete checks. This colored explanatory diagram uses Mermaid styling; manifest-registered product flows must use the checker's [portable diagram subset](references/enforcement-contract.md#headless-diagram-validation).
+
+Change size is not the trigger: a one-character operator or literal change can affect behavior. AST differences conservatively trigger review; redraw a flow only when its documented behavior changes, otherwise retain it with reviewer-verified reasoning. File-mode inputs remain byte-sensitive; Python docstrings, literal whitespace and supported tool directives can also affect hashes. See the [change/obligation table](references/enforcement-contract.md#change-filtering-and-review-cost) for exact boundaries.
+
+Token savings come from avoiding new semantic-review calls and flow rewrites for unchanged features, while retaining each affected feature's full source/context/dependencies and required pre-edit reading. The checker rejects missing coverage or current review records; required CI and protected merge settings must enforce that result on the actual candidate. It neither writes flows automatically nor proves runtime equivalence, reviewer authenticity or comprehension. Token savings are workload-dependent and unmeasured.
 
 ## Bundled tools
 

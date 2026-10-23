@@ -22,6 +22,8 @@
 
 採用時必須建立根目錄預讀規則、真實功能／來源對照與專案的 CI／合併管制；安裝技能本身只複製資源。Headless 圖形／複雜度檢查不代表視覺可讀性已確認，子代理審查紀錄也不取代專案要求的人工核准。
 
+共用規則維護於 `AGENTS.md`，需要時透過已驗證的工具專用入口匯入。可先導入核心端到端功能及其依賴；[採用指南](skills/flow-docs-sync/references/enforcement-contract.md#agent-entrypoint-discovery)涵蓋入口、多語言選擇、證據範本與完成狀態。[彩色流程圖](skills/flow-docs-sync/SKILL.md#change-filtering-and-synchronization-gate)說明 AST 如何讓純註解／排版變動免於重畫與新增語意審查，同時保留候選版本檢查。
+
 ## 客戶報價
 
 使用 `npx --yes skills@1.5.24 add CloudWorkTools/skills --skill client-quotation --agent codex --yes` 安裝。用 `$client-quotation` 製作共用編號的報價單與功能規劃附件，清楚列出付款階段，以及開發期間的 UI 示範、溝通與約定調整。附帶的 ODT 範本只有欄位提示，交付客戶前需填入已授權的專案資料。

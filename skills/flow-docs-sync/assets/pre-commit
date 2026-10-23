@@ -1,4 +1,5 @@
 #!/bin/sh
+# Optional strict per-commit validator; does not generate docs or allow stale WIP.
 # Copy the checker to this project-owned location; compose with existing hooks.
 set -eu
 root=$(git rev-parse --show-toplevel)

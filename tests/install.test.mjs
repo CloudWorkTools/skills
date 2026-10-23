@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
+import { markdownLinkErrors } from './helpers/markdown-links.mjs';
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const env = { ...process.env, DISABLE_TELEMETRY: '1', DO_NOT_TRACK: '1' };
@@ -35,6 +36,7 @@ test(`npm package installs a complete, discoverable ${skill} skill`, () => {
       }
     }
     compare(source);
+    assert.deepEqual(markdownLinkErrors(installed), [], `broken installed links in ${skill}`);
     const listed = npm(['exec', '--yes', '--package=skills@1.5.24', '--',
       'skills', 'list', '--agent', 'codex', '--json'], project);
     assert.ok(listed.includes(skill));

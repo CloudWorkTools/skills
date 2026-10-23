@@ -67,6 +67,30 @@ The cost reduction is fewer unrelated flow rewrites and semantic-review calls. R
 
 Fingerprints bind the exact comparison base and relevant content, so changed inputs invalidate affected evidence. No affected features means no new review obligation; it does not reauthenticate previous reviews. Initial adoption against an existing base without a manifest requires review of all candidate features. An invalid base fails; comparing a committed candidate with itself via `--base HEAD` creates an empty comparison and cannot establish change review. CI must select the intended base/candidate and enforce its result through required checks and protected merge settings.
 
+## Delivery triggers and generation
+
+Default to synchronizing the PR delivered for review and merge. Pre-edit reading still applies during development; edits, saves, Draft PRs and WIP commits do not require flow generation or semantic review. Pending work cannot claim synchronized delivery. Generation changes only necessary documents; validation checks the actual candidate even when no redraw is needed.
+
+| Boundary | Required integration behavior | AI work |
+| --- | --- | --- |
+| Draft or WIP development | Preserve pending impact and pre-edit reading. Required CI reports synchronization pending for Drafts; it must not report a passing merge gate. | Defer generation and semantic review. |
+| Non-draft PR opened/reopened, or Draft marked ready | Prepare the exact review candidate and run Maintain. | Filter impact first; generate necessary documents, then review affected fingerprints. |
+| New candidate on a ready PR, including generated docs commits | Revalidate on `synchronize`; a base/policy/dependency change also requires revalidation. | Reuse matching evidence; synchronize/review invalidated features only. |
+| Merge gate, including merge queue where used | Required CI validates the intended head, test-merge or merge-group candidate against a trusted base. Pending, failed or stale results prevent merge. | A validator must not silently generate files and declare its earlier candidate passed. |
+| Project without PRs, or explicit strict per-commit policy | Prepare the intended staged candidate before commit; the optional pre-commit hook validates the index. | Generate after intended content settles, before the commit. |
+
+These are adoption requirements for project-specific integration. The bundled checker and [hook](../assets/pre-commit) only validate; neither invokes AI. No AI runner or CI workflow is bundled. An adopted agent performs delivery preparation automatically within its authorized task; the user need not type a separate Maintain command. An unattended ready event requires a configured runner. Until it is installed and exercised, report automatic generation incomplete and have the preparing agent perform synchronization. Do not claim that installing this skill activates GitHub events.
+
+Record the selected boundary, exact workflow/hook paths, runner command, allowed output paths and base/candidate policy in `AGENTS.md` and `docs/flows/README.md`. A PR-delivery policy must not newly install the bundled strict hook as a mandatory WIP gate. Preserve existing project hooks and requirements; resolve conflicting policy explicitly. The checker has no WIP-message detection or draft-aware bypass.
+
+For GitHub integration, handle ready non-draft `opened`/`reopened`, `ready_for_review` and subsequent `synchronize` events. Revalidation must also cover target-base updates and `merge_group` when using a merge queue. A Draft skip is pending delivery, not evidence of synchronization. Scope filtering must not leave the required merge gate absent or falsely successful. See the [official event definitions](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows) (consulted 2026-10-23).
+
+Pin the base and candidate before generation. Keep generation outputs in the PR and revalidate the resulting candidate; preserve human approval requirements. Review fingerprints bind the exact base, so local `HEAD` evidence may need rebuilding for the PR base. Never copy a local `--base HEAD` command into committed CI checkout without defining the comparison: comparing the candidate to itself misses the change.
+
+For partial staging, isolate the intended index contents before generation. `snapshot` reads the worktree and rejects `--staged`; running it on unrelated unstaged experiments produces the wrong fingerprints. Return only authorized documentation/evidence patches, preserve existing edits, and recheck candidate identity before applying results. Never stage unrelated code with `git add -A` as a synchronization shortcut.
+
+A runner needs a noninteractive model command, timeout/failure handling and duplicate-run protection. Reuse valid feature evidence on retries; generated outputs must not cause an endless generation loop. Missing credentials or review leave synchronization incomplete. Use a safe patch handoff for untrusted forks; do not execute untrusted PR code with privileged workflow credentials. Verify bot-generated commits receive the required checks and reviews before claiming completion. Post-commit or post-merge generation cannot guarantee that the original delivered candidate contains synchronized documents.
+
 ## CLI and staged hook
 
 Python 3.10+ and Git are required. Native Python and file modes use only the standard library. Cross-language AST mode requires the pinned optional packages:
@@ -91,7 +115,7 @@ python3 tools/flow-docs/flow_checker.py check --root . --base HEAD --staged
 
 Worktree and staged validation are different snapshots. `--staged` reads the Git index, so unstaged fixes cannot make a bad commit pass. `snapshot --staged` is rejected; snapshot updates the worktree only, and the operator must stage intended results. Do not mix worktree review fingerprints with staged checks.
 
-The [pre-commit template](../assets/pre-commit) expects a project-owned checker at `tools/flow-docs/flow_checker.py`. Copy the complete scripts directory there and adapt the hook to the project's existing hook manager or `core.hooksPath`. Set `FLOW_DOCS_PYTHON` to the parser environment's interpreter when using optional AST dependencies; otherwise the hook uses `python3`. Preserve existing hooks; do not overwrite them or change global Git configuration. A local pre-commit hook can be bypassed, so CI must run the same checker against the actual candidate with a trusted base. Keep protected review for checker, workflow and scope-policy changes.
+For an explicit strict per-commit policy, the [pre-commit template](../assets/pre-commit) expects a project-owned checker at `tools/flow-docs/flow_checker.py`. Copy the complete scripts directory there and adapt the hook to the project's existing hook manager or `core.hooksPath`. Set `FLOW_DOCS_PYTHON` to the parser environment's interpreter when using optional AST dependencies; otherwise the hook uses `python3`. Preserve existing hooks; do not overwrite them or change global Git configuration. A local pre-commit hook can be bypassed, so CI must run the same checker against the actual candidate with a trusted base. Keep protected review for checker, workflow and scope-policy changes.
 
 ## Tested language adapters
 
@@ -222,6 +246,7 @@ Write the adoption report at the path specified in the [project-file layout](../
 | Root rule and discovery | Rule location, actual entrypoints and session loading evidence. |
 | Read-before-edit | Observed document identities and read/edit ordering; unverified without a trace. Recheck after scope expansion, delegation or resume. |
 | Coverage | Adopted features/inputs, dependency inventory, exclusions and unknowns; partial or whole-project claim. |
+| Delivery trigger and generation | Selected boundary, exact workflow/runner paths, tested event/candidate and result; distinguish agent preparation from unattended generation. No runner means automation incomplete. |
 | Structural checker | Exact base/candidate, worktree or staged mode, command and result; no semantic-correctness claim. |
 | Agent semantic review | Feature fingerprints, reviewer/evidence paths and findings; structured records do not authenticate a reviewer. |
 | Behavior and external inputs | Test/runtime evidence, external versions or observation time, and skipped cases. |
@@ -237,6 +262,7 @@ The following capabilities are not bundled. The current adoption workflow remain
 | Pre-edit blocking hook | Evaluate separately; can reduce missed reads but cannot prove understanding. Blocking only Edit/Write leaves shell and other write paths. | Define session/worktree isolation, document versions, read-set invalidation on scope/delegation/resume, and tool coverage/bypasses. |
 | Automatic dependency inventory | Checklist provided; automation remains an aid, not complete-call-graph proof. | Bound supported dispatch/language patterns and require source verification for uncertain relationships. |
 | Sequence/subgraph parser | Supplementary-diagram alternative provided; native parsing deferred. | Define message/node-to-source mappings, branches/loops, complexity metrics and failing syntax cases. |
+| AI generation runner | Not bundled; project-specific integration follows the delivery-trigger contract. | Define model invocation, snapshot isolation, output permissions, timeouts, duplicate-run protection and failures; verify ready events and later candidate changes. |
 | CI workflow template | Separate follow-up; a local `--base HEAD` command is insufficient for a committed CI candidate. | Define trusted comparison base, head/merge candidate and evidence consistency; test base updates, forks, initial adoption and workflow/checker/policy changes. Use minimal permissions and no privileged execution of untrusted code. Verify required checks/protected merge settings separately. |
 
 ## Required adoption and acceptance

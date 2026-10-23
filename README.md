@@ -18,7 +18,9 @@ Install with `npx --yes skills@1.5.24 add CloudWorkTools/skills --skill flow-doc
 
 > Use $flow-docs-sync to establish a system overview and per-feature flows with source-file/symbol navigation. Make synchronous updates mandatory and verify the project's CI and merge controls.
 
-The skill bundles a Python checker, staged pre-commit template, inline `AGENTS.md` bootstrap and fresh-subagent review prompt. It combines file MD5 integrity with symbol/context hashes: native Python or optional Tree-sitter adapters for JS/TS/TSX, Go, Rust, Java, C#, C/C++, GDScript, SQL, Prisma and JSON. Other formats use explicit file-level coverage. See the [checker contract and language boundaries](skills/flow-docs-sync/references/enforcement-contract.md).
+The default synchronization boundary is PR delivery: defer generation during Draft/WIP work, synchronize when ready for review, and revalidate subsequent candidates before merge. Projects without PRs use commit preparation. Automatic CI generation requires a project-specific AI runner; none is bundled. See [delivery triggers](skills/flow-docs-sync/references/enforcement-contract.md#delivery-triggers-and-generation).
+
+The skill bundles a Python checker, optional strict staged pre-commit template, inline `AGENTS.md` bootstrap and fresh-subagent review prompt. It combines file MD5 integrity with symbol/context hashes: native Python or optional Tree-sitter adapters for JS/TS/TSX, Go, Rust, Java, C#, C/C++, GDScript, SQL, Prisma and JSON. Other formats use explicit file-level coverage. See the [checker contract and language boundaries](skills/flow-docs-sync/references/enforcement-contract.md).
 
 Adoption requires the root reading rule, real feature/source mappings and project-specific CI/merge controls. Installing the skill only copies resources. Headless graph/complexity checks do not prove visual readability; an agent review record does not replace repository-required human approval.
 
@@ -127,3 +129,5 @@ npm test
 Node.js 22+, npm, Python 3.10+ and Git are required for the full test suite. They pack the repository, install the tarball into temporary projects, install each skill through the real npm CLI, and verify every resource is copied intact and discoverable. Update-check tests cover reference changes, additions/deletions, license changes, unrelated commits and failed API calls. Flow-checker tests use temporary Git repositories, including real hook rejection and staged checks. Optional cross-language tests require the pinned parser packages; set `FLOW_REQUIRE_TREE_SITTER=1` in the test environment to fail rather than skip when they are missing. The tests leave user-level skills and Docker workloads untouched. Network access is needed to obtain the pinned CLI if it is not cached.
 
 The portable guidance was developed from the PR preview work in [MUAMS PR #71](https://github.com/ROCMCSpace/MUAMS/pull/71); MUAMS-specific service names, credentials, and deployment settings are not bundled.
+
+PR tests run through `.github/workflows/tests.yml`. See [contributor checks](docs/contributing.md) for installed-link validation, flow behavior review cases and global skill receipts.

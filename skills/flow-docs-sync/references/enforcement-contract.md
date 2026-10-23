@@ -15,7 +15,7 @@ This is an initial skeleton; run `snapshot` to populate source fingerprints befo
   "sources": [{"path": "src/jobs.py", "kind": "python"}],
   "features": [{
     "id": "job.run",
-    "flow": "docs/flows/job-run.mmd",
+    "flow": "docs/flows/job.run.mmd",
     "mappings": [
       {"node": "A", "path": "src/jobs.py", "symbol": "run"},
       {"node": "B", "path": "src/jobs.py", "symbol": "run"}
@@ -140,7 +140,7 @@ For interactions that benefit from `sequenceDiagram`, subgraphs or richer notati
 
 Dispatch [the independent reviewer prompt](reviewer-prompt.md) automatically when a fresh-subagent facility is available. Provide raw source/dependencies in addition to diff and flows; those alone may omit critical context. Retain required human approvals where repository policy specifies them.
 
-Save the reviewer response as a JSON evidence file. Each manifest review entry contains `feature`, `fingerprint`, `reviewer`, `verdict: "pass"` and `evidence` pointing to that file. The file must identify the same feature, fingerprint, reviewer and passing verdict, with an empty `findings` list. A failed/incomplete response or stale fingerprint is rejected.
+Save the reviewer response at the review-evidence path specified in the [project-file layout](../SKILL.md#project-files-and-responsibilities). Each manifest review entry contains `feature`, `fingerprint`, `reviewer`, `verdict: "pass"` and `evidence` pointing to that exact file. The file must identify the same feature, fingerprint, reviewer and passing verdict, with an empty `findings` list. A failed/incomplete response or stale fingerprint is rejected.
 
 These fields form a structured declaration, not an authenticated or cryptographic signature. A malicious author can fabricate JSON. Where authenticity matters, the repository's protected review/check integration must establish it independently. If subagents are unavailable, report independent review incomplete and continue unrelated safe work. Never replace a required result with an author's self-approval.
 
@@ -165,7 +165,7 @@ Use `/memory` or `/context` to inspect loaded files on supporting versions; dire
 
 ## Adoption inventory and staged rollout
 
-Record actual document paths and owners in the project's existing index. Requirements and contracts own expected behavior, architecture documents own responsibilities, and feature flows own branches/interactions and source navigation. Source inspection supplies evidence of implemented behavior. Resolve a conflict with the relevant owner; do not automatically rewrite an intended contract to match a defect or copy competing authoritative descriptions.
+Use the [project-file layout](../SKILL.md#project-files-and-responsibilities): the flow index records actual document paths/owners and links existing authoritative material. Requirements and contracts own expected behavior, architecture documents own responsibilities, and feature flows own branches/interactions and source navigation. Source inspection supplies evidence of implemented behavior. Resolve a conflict with the relevant owner; do not automatically rewrite an intended contract to match a defect or copy competing authoritative descriptions.
 
 Inventory a core end-to-end feature with the following dependency checklist before narrowing the initial scope:
 
@@ -191,7 +191,7 @@ For example, first adopt `download.run` together with its `network.fetch` depend
 
 ## Runtime evidence template
 
-Save this Markdown record through the project's existing evidence process and provide its path to the reviewer. It is separate from the required reviewer JSON and does not create approval. Fill it from an executed scenario; otherwise mark the scenario unverified.
+Save this Markdown record at the per-feature runtime scenario path in the [project-file layout](../SKILL.md#project-files-and-responsibilities) and provide that exact path to the reviewer. Preserve supporting artifacts in the adjacent scenario directory. It is separate from the required reviewer JSON and does not create approval. Fill it from an executed scenario; otherwise mark the scenario unverified.
 
 ```markdown
 ### Runtime evidence: <feature / scenario>
@@ -214,7 +214,7 @@ Classify failures from evidence: a stale description, insufficient verification,
 
 ## Completion report
 
-Use separate statuses such as `passed`, `failed`, `incomplete`, `not run` or `unverified`, with evidence for the exact scope and candidate. The following is a report template, not a list of completed checks:
+Write the adoption report at the path specified in the [project-file layout](../SKILL.md#project-files-and-responsibilities). Begin with an artifact table containing exact path, purpose, created/reused/missing/not-applicable status and verification evidence for every required/conditional artifact. Explain any explicitly required path overrides. Then use separate gate statuses such as `passed`, `failed`, `incomplete`, `not run` or `unverified`, with evidence for the exact scope and candidate. The following is a report template, not a list of completed checks:
 
 | Gate | Required report content |
 | --- | --- |
@@ -242,6 +242,8 @@ The following capabilities are not bundled. The current adoption workflow remain
 ## Required adoption and acceptance
 
 The inline bootstrap in `SKILL.md` is authoritative for pre-edit reading and is available without loading this reference. Adopt it only with real overview/manifest/flow paths. Preserve local-only root instructions; use a tracked policy plus a documented bootstrap for other workspaces. Check the actual agent entrypoints and nested instruction scopes instead of assuming all tools discover `AGENTS.md`.
+
+Verify the [project-file layout](../SKILL.md#project-files-and-responsibilities) against actual files and content. The root README is navigation only. An adoption that only edits that README or omits the rule, overview, feature flows, manifest or adoption report is incomplete. Verify every applicable review/runtime/tooling artifact at its recorded path; retain existing human-facing documents at their owning locations.
 
 Run mechanical cases through the real checker in isolated Git repositories. Verify these cases:
 

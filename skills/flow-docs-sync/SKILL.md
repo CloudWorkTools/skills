@@ -16,9 +16,30 @@ Keep system overview, feature flows and implementation references consistent in 
 
 Read local instructions and terminology first; reuse the project's documentation and discovery tools. Installing this skill does not configure a project or its CI. Whole-project adoption requires all first-party behavior-bearing logic accounted for; excluded logic remains an explicit coverage gap.
 
+## Project files and responsibilities
+
+Use these repository-relative paths for new adoption. `<feature-id>` is the manifest feature ID, such as `download.run`; use filename-safe IDs. `<fingerprint>` is the checker's current feature fingerprint, and `<scenario-id>` is a stable filename-safe runtime scenario name.
+
+| Path / filename | Required when | Purpose |
+| --- | --- | --- |
+| `AGENTS.md` | Every adoption | Shared pre-edit reading and post-edit synchronization rules; link the actual flow index, manifest and checker command. |
+| `docs/flows/README.md` | Every adoption | System overview and flow index: feature IDs, links to checked flows and contracts, source-file/symbol navigation, adopted scope/gaps, and existing document paths/owners. |
+| `docs/flows/<feature-id>.mmd` | Each adopted feature | Checked Mermaid flowchart for that feature. Set the manifest's `flow` to this exact path. An explicitly selected PlantUML flow uses the same basename with `.puml`. |
+| `docs/flow-manifest.json` | Every adoption | Machine-readable source inventory, fingerprints, feature/node/symbol mappings, `depends_on`, reviews and policy inputs. |
+| `docs/flows/contracts.md` | Shared contracts have no existing authoritative document | Shared boundaries, inputs/outputs, errors and invariants. If an existing contract owns them, link its exact path from the flow index instead of copying it. |
+| `docs/flow-evidence/adoption.md` | Every adoption | Adoption report: exact artifact paths, reused documents, scope/gaps and separate verification states. It records results; rules remain in `AGENTS.md`. |
+| `docs/flow-evidence/reviews/<feature-id>/<fingerprint>.json` | A feature requires independent review | Raw reviewer JSON preserved by the coordinator. The corresponding manifest review entry's `evidence` points to this exact file. |
+| `docs/flow-evidence/runtime/<feature-id>/<scenario-id>.md` | Runtime or external-behavior evidence is needed | Filled runtime evidence template. Keep supporting logs/traces/images beside it in `<scenario-id>/`, surviving environment cleanup. |
+| `tools/flow-docs/flow_checker.py`, `tools/flow-docs/flow_parsers.py`, `tools/flow-docs/requirements-ast.txt` | Every checker-enabled adoption | Copy the complete bundled `scripts/` directory here: CLI checker, optional language adapters and dependency pins. |
+| `.git/hooks/pre-commit` | Installing a hook in a project without an existing hook manager | Staged check entrypoint. Compose with an existing hook manager or configured `core.hooksPath` instead, recording the actual file path. |
+| `.github/workflows/flow-docs.yml` | Adding a dedicated GitHub Actions check | Project-specific candidate validation workflow; no workflow template is bundled. Existing CI may run the check in its current file; record that exact path. |
+| `README.md` at repository root | Optional navigation | Short introduction and link to `docs/flows/README.md`; it does not own synchronization rules, feature flows, the manifest or adoption evidence. |
+
+Existing requirements/architecture/contracts keep their authoritative locations; the flow index references them. Reusing documents does not relocate these required artifacts. Only explicit project instructions may override the default layout: record every default-to-actual path in `AGENTS.md` and the actual flow index, and update commands, manifest/evidence pointers and links consistently. Root `README.md` cannot substitute for required artifacts.
+
 ## Mandatory bootstrap, available in this file
 
-During adoption, keep the shared synchronization rule in root `AGENTS.md` as its single source of truth. Replace the paths and checker command with verified project locations. Preserve existing instructions and local-only files. Establish missing document baselines before enabling their pointers.
+During adoption, keep the shared synchronization rule in root `AGENTS.md` as its single source of truth. Use the project-file layout above; resolve and record any explicitly required path overrides before writing this block. Preserve existing instructions and local-only files. Establish missing document baselines before enabling their pointers.
 
 When the actual Claude Code session discovers `AGENTS.md` directly, do not create `CLAUDE.md`. If root `CLAUDE.md` already exists, preserve its content and add a missing `@AGENTS.md` import; `.claude/CLAUDE.md` uses `@../AGENTS.md`. Imports resolve relative to their containing file; an ordinary Markdown link does not load instructions. For sessions without direct support, use a minimal import entrypoint as a compatibility fallback. Keep the rule itself in `AGENTS.md`.
 
@@ -49,11 +70,13 @@ If an optional packaged resource is missing, retain this rule, verify the instal
 
 ## Adopt workflow
 
-1. **Assign document responsibility.** Inventory existing requirements, architecture, contracts and flows; record their real paths and owners in the existing documentation index. Requirements/contracts define intended behavior; source review establishes actual behavior. Record conflicts before changing the owning document instead of duplicating it.
+1. **Assign document responsibility.** Inventory existing requirements, architecture, contracts and flows; record their real paths and owners in `docs/flows/README.md` using the layout above. Requirements/contracts define intended behavior; source review establishes actual behavior. Record conflicts before changing the owning document instead of duplicating it.
 2. **Choose a bounded scope.** Start with a core end-to-end feature plus its shared dependencies and behavioral inputs. List excluded and unknown areas as coverage gaps; partial adoption cannot claim whole-project coverage. Follow the [adoption inventory](references/enforcement-contract.md#adoption-inventory-and-staged-rollout).
-3. **Establish the baseline.** Select explicit source modes, register sources/symbols and feature dependencies, then create the overview, flows and manifest. Reuse existing documents and source-discovery tools. Refresh registered fingerprints and obtain initial reviews against the real comparison base before claiming a passing baseline.
+3. **Establish the baseline.** Select explicit source modes, register sources/symbols and feature dependencies, then create the overview, per-feature flows and manifest at their specified paths. Link existing authoritative documents and reuse source-discovery tools. Refresh registered fingerprints and obtain initial reviews against the real comparison base before claiming a passing baseline.
 4. **Install and verify.** Adopt the inline bootstrap and check actual discovery/read-before-edit ordering. Copy the complete checker tools, compose with existing hooks, run candidate-specific checks and verify required CI/merge settings. Preserve project-specific validation; absent execution evidence remains unverified.
-5. **Report each gate.** Use the [completion report](references/enforcement-contract.md#completion-report) and [runtime evidence template](references/enforcement-contract.md#runtime-evidence-template). Expand the adopted scope with its dependencies through another reviewed change; retain the same gates within the adopted scope.
+5. **Report each gate.** Write `docs/flow-evidence/adoption.md` using the [completion report](references/enforcement-contract.md#completion-report), listing every required/conditional artifact with its exact path and created/reused/missing/not-applicable status. Save runtime evidence at the specified per-feature scenario path using the [template](references/enforcement-contract.md#runtime-evidence-template). Expand the adopted scope with its dependencies through another reviewed change; retain the same gates within the adopted scope.
+
+Before claiming adoption complete, verify each required artifact exists, has its assigned content and is linked correctly. For conditional artifacts, record the actual file or a concrete reason it is not applicable. A README-only change, an empty directory, or a checklist claiming files exist does not establish adoption; missing artifacts/checks leave it incomplete.
 
 ## Maintain workflow
 

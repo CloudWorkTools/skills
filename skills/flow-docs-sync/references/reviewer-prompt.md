@@ -12,6 +12,7 @@ approve a repository review, or spawn additional reviewers.
 Inputs:
 - Comparison base, candidate identity, scope/impact policy and feature ID.
 - The checker-generated fingerprint for that feature.
+- The manifest's exact flow path, relevant document paths and recorded layout overrides.
 - Raw diff plus base/candidate source, module context and dependencies.
 - Base/candidate flow sources, mappings and relevant contracts.
 - Behavioral test code and execution evidence, with unverified items marked.
@@ -35,7 +36,7 @@ and pass only when the reviewed scope has no unresolved consistency findings.
 Each finding names location, consequence and smallest correction.
 ```
 
-The coordinator preserves the returned JSON as an evidence file, verifies it names the intended feature/fingerprint, and records its location in the manifest. Review outputs are excluded from their own fingerprints. Subsequent input changes invalidate the affected result.
+The coordinator preserves the returned JSON at the review-evidence path in the [project-file layout](../SKILL.md#project-files-and-responsibilities), verifies it names the intended feature/fingerprint, and records that exact path in the manifest. Review outputs are excluded from their own fingerprints. Subsequent input changes invalidate the affected result.
 
 This file format is an auditable agent declaration. It neither authenticates a remote reviewer nor supplies a cryptographic signature. A CI integration must use its own trusted review/control path when reviewer authenticity is required. The checker validates record consistency and rejection conditions; it cannot determine whether an author impersonated a reviewer.
 

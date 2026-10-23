@@ -6,64 +6,70 @@ license: MIT
 
 # Flow documentation synchronization
 
-Keep system overview, feature flows and implementation references consistent in the same change. A source MD5 detects content changes; semantic accuracy requires source review and relevant behavioral evidence.
+Keep system overview, feature flows and implementation references consistent in the same change. The bundled checker verifies structural/content consistency; source review and behavioral evidence establish semantic confidence.
 
 ## Select the operation
 
-- **Adopt:** establish the feature inventory, source scope, diagrams, mappings and validation baseline.
-- **Maintain:** update an adopted project's affected flows alongside its source changes.
-- **Audit:** report gaps and bypasses without modifying the system.
+- **Adopt:** inventory features/inputs, establish flows and mappings, install the project reading rule and checker/hook.
+- **Maintain:** read affected flows before editing, synchronize changes and run checks/review.
+- **Audit:** report coverage gaps and bypasses without changing the system.
 
-Use the project's existing documentation and diagram format. Read local instructions and terminology first. During structural exploration, use its required discovery tools and verify candidates against source. Installing this skill alone supplies neither repository enforcement nor guaranteed invocation by future agents.
+Read local instructions and terminology first; reuse the project's documentation and discovery tools. Installing this skill does not configure a project or its CI. Whole-project adoption requires all first-party behavior-bearing logic accounted for; excluded logic remains an explicit coverage gap.
 
-Read [the enforcement contract](references/enforcement-contract.md) when establishing or auditing controls, changing mappings or checker policy, or interpreting a failed gate. It owns the data requirements and acceptance cases.
+## Mandatory bootstrap, available in this file
 
-## Mandatory reading before source edits
+During adoption, write this block into root `AGENTS.md` and link it from the other agent entrypoints actually used, including `CLAUDE.md` when applicable. Replace the paths and checker command with verified project locations. Preserve existing instructions and local-only files. Establish missing document baselines before enabling their pointers.
 
-On every task that adds, modifies, refactors, moves or deletes code or behavior-bearing inputs, first read the project's root `AGENTS.md`, flow overview and scope/source manifest. Resolve the affected features, then read their canonical flows, shared subflows and linked contracts before editing. Reading source to establish impact is allowed. Record the document paths/content identities and affected feature IDs in the task's existing evidence or handoff.
+```markdown
+## [MANDATORY] Flow Documentation Sync Gate
+1. Pre-Edit Read: before adding, modifying, refactoring, moving or deleting
+   code or behavior-bearing inputs, read docs/flows/README.md,
+   docs/flow-manifest.json and all affected feature/shared flows and contracts.
+   Before the first edit, report: Affected Feature IDs: <resolved IDs>.
+   Missing/stale flows require a source-verified baseline first;
+   unreadable required documents block dependent edits.
+2. Post-Edit Sync: run flow-docs-sync Maintain, update affected flows,
+   mappings and source fingerprints in the same change, then run:
+   python3 tools/flow-docs/flow_checker.py check --base HEAD
+   Use the project's actual comparison base; HEAD is the local default.
+   Obtain independent agent review where required; preserve repository human
+   approval requirements. Hash refreshes alone are not semantic review.
+3. Delegation/resume: each executing agent reads its own affected documents.
+   Recheck the read set after scope/input changes or a handoff.
+   Missing required checks or unresolved coverage prevent completion claims.
+```
 
-For a new capability, read related flows and document the proposed flow before implementation; distinguish it from existing behavior. When a required flow is absent or stale, establish its minimal source-verified baseline first. An unreadable required document blocks dependent source edits; continue only work that does not rely on it and report the gap. Re-read affected documents after a scope change or changed input. Each delegated agent must receive the applicable rule and resolve/read its own relevant documents. After resuming from a handoff or compaction, check that the read set is current before further edits.
+This block is usable without a reference file or installed skill. For new capabilities, read related flows and document intended behavior as proposed before implementation. Record read document identities and affected IDs in existing task evidence. Reading source to discover impact is allowed before editing. A read declaration cannot prove comprehension.
 
-During adoption, write the hard rule into root `AGENTS.md` using the contract's project-instruction template with verified project paths. Link the same policy from other agent instruction entrypoints actually used by the project. Skill installation alone does not perform this adoption. If instructions are local-only, preserve that boundary and report shared-workspace adoption incomplete until the bootstrap is configured.
+If an optional packaged resource is missing, retain this rule, verify the installed package and recover the matching resource from the skill's managed source. Report tooling incomplete; missing tooling does not authorize bypassing it or require stopping unrelated work.
 
-## Required workflow
+## Maintain workflow
 
-1. **Pin scope and snapshot.** Identify the reviewed base and exact candidate contents. Inventory user functions and their UI, API, CLI and background entrypoints. Include behavior-bearing templates, configuration, dependencies and build/deploy inputs. Record exclusions with reasons and unresolved coverage. Classify remote configuration and external behavior separately. Worktree, index and committed-tree verification are distinct; state which was checked.
-2. **Establish navigation.** Provide a system overview with a thumbnail or feature link, one canonical flow per feature, stable feature/node IDs, and node-to-relative-path/qualified-symbol references. Shared subflows have one owner. Every formal feature needs an entry; a mapped file alone does not establish feature coverage. Capture success, decisions, error, cancellation and recovery paths where implemented. Mark proposals separately from current behavior.
-3. **Compute impact before editing records.** Compare both trees, including added, deleted, modified and moved inputs. Derive affected features from the union of base and candidate mappings. Inspect new or changed entrypoints inside existing files as well as new files. Treat removed mappings, scope reductions and policy changes as reviewable changes, not exemptions. With no usable base, perform baseline inventory and report incremental validation incomplete.
-4. **Synchronize in the same change.** Update affected flow sources, node mappings, feature entries and relevant evidence. Maintain source MD5s in one authoritative manifest. Every affected feature receives either a flow change or a specific, evidenced explanation that its behavior remains unchanged. A whole-file change requires revalidation of all mapped features. Identify indirect dependents; uncertain impact remains unresolved.
-5. **Bind semantic review to contents.** A reviewer independent of the author checks the actual behavior and evidence. Bind the feature-specific decision to the base, scope/impact policy, affected features and relevant sources, flow sources, entrypoints and mappings. Any later change to a bound input invalidates affected review. Use an external review/check or the contract's content fingerprint; keep result records outside their own fingerprint. An author-written assertion is a declaration, not independent approval.
-6. **Validate and report.** Check inventory closure, MD5s, paths/symbols, bidirectional node mappings, diagram syntax and generated overview/thumbnail consistency. Render and inspect diagrams; a successful parser alone does not prove legibility. Run relevant behavioral tests. For CI adoption or changes, exercise the contract's failing fixtures and the project's required image/deployment validations. Evidence belongs to the tested candidate; later changes require affected checks again.
+1. **Read and pin.** Read root instructions, overview, manifest, affected flows and shared contracts. Identify the comparison base and exact worktree, staged or committed candidate. Re-read after expanding scope.
+2. **Compute impact.** Use the union of base/candidate mappings, including removed records, new files and new symbols in existing files. Follow explicit dependent-feature links. Review scope reductions and policy/checker changes separately. Uncertain dependencies use conservative file-level coverage.
+3. **Synchronize.** Update flow sources, mappings and evidence. Run `snapshot` to refresh explicitly registered inputs; it does not register unknown code or approve behavior. Native Python and optional multi-language Tree-sitter adapters normalize syntax while retaining semantic tokens/directives. Module context changes affect all features mapped to that file; symbol-body changes affect mapped features and declared dependents. Keep raw MD5 for file-byte integrity. Unsupported syntax or uncertain dynamic dependencies use explicit file-level coverage rather than an invented symbol match.
+4. **Review automatically.** When affected behavior changes, obtain each feature's fingerprint, then dispatch a fresh reviewer with no conversation history using [the reviewer prompt](references/reviewer-prompt.md). Supply raw base/candidate sources, diff, flows, mappings, policy and tests, including relevant dependencies. The reviewer may request more source. Save its structured result as an evidence file and add the matching manifest review entry. This is an independent agent review record, not a cryptographic signature or repository human approval. Use at most two fix/review rounds per review request, then report unresolved findings. When subagents are unavailable, independent review is incomplete; continue safe work and report the missing gate rather than inventing approval.
+5. **Check.** Run the bundled checker on the actual candidate, relevant behavioral tests and applicable project integration/deployment checks. For staged hooks use `--staged`; testing worktree bytes does not validate the index. Reject stale reviews when reviewed sources, flows, mappings, dependencies, base or policy change. Keep result records outside their own fingerprints.
+6. **Report states.** Distinguish skill installed, reading rule adopted, documentation coverage, structural checker passed, agent semantic review, human/merge requirements and visual inspection. Missing/skipped candidate checks remain unverified.
 
-## Enforcement and completion
+## Bundled tools
 
-When implementing adoption, install project-specific deterministic checks using existing tools and add the contributor rule alongside the mandatory project instructions. Preserve local files and do not commit private deployment data. Determine the repository's required-check and review settings through read-only inspection where available. Modify remote settings, publish, deploy or send messages only within existing authorization.
+Python 3.10+ and Git run the checker; its implementation language does not restrict the project's languages. File-level and native-Python checks need no third-party packages. Install `scripts/requirements-ast.txt` in a dedicated environment for optional Tree-sitter symbol checks across supported languages. Read [the enforcement contract](references/enforcement-contract.md) for the tested grammar/symbol boundaries and first adoption.
 
-A merge gate must require a successful result for the actual candidate plus its required review. Missing, pending or skipped results are unverified. Preserve protections for untrusted fork code; use the project's safe manual path instead. Checker, manifest scope and workflow changes require independent review and fixed failing fixtures.
+```bash
+python3 <skill-dir>/scripts/flow_checker.py snapshot --root .
+python3 <skill-dir>/scripts/flow_checker.py fingerprint --root . --base HEAD --feature feature.id
+python3 <skill-dir>/scripts/flow_checker.py check --root . --base HEAD
+```
 
-Report each state with evidence or an explicit incomplete reason:
+The checker supports an explicit, bounded Mermaid flowchart/PlantUML named-state subset, not either language's full grammar. Unsupported constructs fail visibly. Its headless checks cover node/symbol mappings, inventory, fingerprints, diff obligations and configurable complexity limits. They do not establish visual readability or semantic correctness. Render and inspect when available; otherwise record `visual verification: pending` without blocking headless structural verification. Regenerate committed derived images through project tooling or report them stale.
 
-| State | Evidence required |
-| --- | --- |
-| Skill created | Valid skill package and exercised usage scenarios |
-| Agent reading rule adopted | Root `AGENTS.md` rule, valid document links and verified discovery in the project's actual agent entrypoints |
-| Documentation adopted | Feature/input inventory, verified flows and mappings, named gaps |
-| Checker verified | Positive and adversarial negative fixtures executed |
-| CI executed | Candidate identity, command/run and result |
-| Merge enforcement active | Repository rule and candidate check/review evidence |
+Copy the complete `scripts/` directory to a project-owned path when installing CI/hooks. Include the checker, parser adapter and dependency pins in `policy_inputs`. Adapt [the pre-commit template](assets/pre-commit) to the project's hook path; compose with existing hooks rather than overwriting them. A local hook is bypassable. Required CI results and protected review settings provide the merge gate, including a safe manual path for untrusted forks. Verify those settings rather than assuming them.
 
-Without a checker, label the project **manual verification only**. Without verified merge settings, report merge enforcement unconfirmed. Discovery gaps, unexecuted production checks and external behavior remain explicit limits; completeness claims cover only the stated scope and evidence.
+## Completion boundaries
 
-## Common failures
+A semantic review may leave a flow unchanged with a concrete, evidenced explanation. Normalized comment/layout changes need refreshed byte fingerprints but do not invalidate unchanged semantic reviews. A whole-file fallback or module-level context change conservatively affects every mapped feature. Git function-context hunks assist impact investigation but are not a semantic-hash backend.
 
-| Temptation | Required response |
-| --- | --- |
-| Refresh hashes or whitespace to clear CI | Show the behavior difference or a substantiated unchanged-flow review |
-| Delete a feature mapping to reduce impact | Preserve both-version impact and justify removal |
-| Accept a new API because its file is registered | Register the entrypoint and its feature flow |
-| Reuse approval after modifying code or a diagram | Invalidate the content-bound review |
-| Declare hard enforcement after installing the skill | Report the actual adoption/checker/CI/merge-gate states |
+All first-party logical inputs, public entrypoints and shared dependencies must be accounted for before claiming whole-project coverage. External APIs, remote configuration and floating dependencies require separate runtime evidence. Preserve repository validation requirements and existing authorization for publishing, deployment or remote settings.
 
-## Example
-
-`shared.py` belongs to features `download.batch` and `queue.resume`. A candidate removes the second mapping, changes the file, and adds a route in an already mapped API file. Both old features still require review; the new route needs a feature/flow mapping. Refreshing MD5s and adding an author's “no impact” note leaves semantic review incomplete. If the source changes after review, rerun affected checks and obtain review for the new contents.
+A complete install includes this file, the checker, hook and referenced resources. Missing resources mean an incomplete installation, not permission to skip the gate. A project with no checker remains manual-only; unconfirmed remote merge settings mean merge enforcement is unconfirmed.

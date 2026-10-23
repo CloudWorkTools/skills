@@ -18,7 +18,9 @@
 
 > 用 $flow-docs-sync 建立系統總覽、每個功能的流程圖與程式檔／函式定位；把同步更新列為硬性規則，並驗證這個專案的 CI 與合併管制。
 
-技能涵蓋來源 MD5、變更前後映射、既有檔案新增入口、綁定內容的獨立審查與衍生圖更新。採用時必須在根目錄 `AGENTS.md` 寫入硬規則，要求代理新增、修改、重構、搬移或刪除程式前，先讀總覽、manifest 與受影響流程。[驗收契約](skills/flow-docs-sync/references/enforcement-contract.md)列出專案檢查器應實作的檢查與對抗案例。安裝技能不會自動導入專案指引、建立檢查器、啟用 CI 或變更合併設定；MD5 相符只能確認內容一致性，流程語意仍需審查與相關測試。
+技能內附 Python Checker、檢查 staged 內容的 pre-commit 範本、內嵌 `AGENTS.md` 引導條文與獨立子代理審查 Prompt。檔案 MD5 負責內容完整性，符號／模組雜湊負責縮小影響範圍；支援原生 Python，以及選配 Tree-sitter 的 JS/TS/TSX、Go、Rust、Java、C#、C/C++、GDScript、SQL、Prisma、JSON 解析。其他格式可明確使用整檔控管。詳見[檢查契約與語言支援邊界](skills/flow-docs-sync/references/enforcement-contract.md)。
+
+採用時必須建立根目錄預讀規則、真實功能／來源對照與專案的 CI／合併管制；安裝技能本身只複製資源。Headless 圖形／複雜度檢查不代表視覺可讀性已確認，子代理審查紀錄也不取代專案要求的人工核准。
 
 ## 客戶報價
 
@@ -120,6 +122,6 @@ Agent 會檢查並重用目標專案已有的預覽腳本，或依附帶的實�
 npm test
 ```
 
-安裝測試需要 Node.js 22+ 與 npm。它們會打包 repository、安裝 tarball 到暫存專案，使用真實 npm CLI 安裝每個技能，並驗證每份資源都被完整複製且可被發現。上游檢查測試涵蓋參考資料的改動、檔案新增／刪除、授權變更、無關 commit 與 API 呼叫失敗。測試不會留下使用者層級技能或 Docker 工作負載。若尚未快取固定版本 CLI，則需要網路下載。
+完整測試需要 Node.js 22+、npm、Python 3.10+ 與 Git。它們會打包 repository、安裝 tarball 到暫存專案，使用真實 npm CLI 安裝每個技能，並驗證每份資源都被完整複製且可被發現。上游檢查測試涵蓋參考資料的改動、檔案新增／刪除、授權變更、無關 commit 與 API 呼叫失敗。流程檢查測試使用暫存 Git 倉庫，涵蓋實際 hook 阻擋與 staged 內容。選配的多語言測試需要固定版本解析套件；測試環境設定 `FLOW_REQUIRE_TREE_SITTER=1` 後，缺套件會失敗而非略過。測試不會留下使用者層級技能或 Docker 工作負載。若尚未快取固定版本 CLI，則需要網路下載。
 
 這份可攜式指引源自 [MUAMS PR #71](https://github.com/ROCMCSpace/MUAMS/pull/71) 的 PR 預覽工作；不包含 MUAMS 專屬的服務名稱、憑證與部署設定。

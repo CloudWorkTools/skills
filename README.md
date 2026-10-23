@@ -22,6 +22,8 @@ The skill bundles a Python checker, staged pre-commit template, inline `AGENTS.m
 
 Adoption requires the root reading rule, real feature/source mappings and project-specific CI/merge controls. Installing the skill only copies resources. Headless graph/complexity checks do not prove visual readability; an agent review record does not replace repository-required human approval.
 
+Shared rules live in `AGENTS.md`, with verified agent-specific imports when needed. Start with a core end-to-end feature and its dependencies; the [adoption guide](skills/flow-docs-sync/references/enforcement-contract.md#agent-entrypoint-discovery) covers entrypoints, mixed-language choices, evidence templates and completion reporting. The [colored workflow](skills/flow-docs-sync/SKILL.md#change-filtering-and-synchronization-gate) explains how AST filtering avoids cosmetic-only redraw/review obligations while retaining candidate checks.
+
 ## Client quotations
 
 Install with `npx --yes skills@1.5.24 add CloudWorkTools/skills --skill client-quotation --agent codex --yes`. Use `$client-quotation` to draft or revise a quotation and scope attachment that share one identifier, show payment milestones clearly, and describe UI review and agreed adjustments. The bundled ODT templates contain field prompts only; replace them with authorized project details before delivery.

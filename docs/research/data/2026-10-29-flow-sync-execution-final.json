@@ -1,0 +1,43 @@
+{
+  "kind": "executed-fixture",
+  "complete": false,
+  "usage_ledger": "2026-10-29-flow-sync-execution-final.usage.jsonl",
+  "model": "claude-opus-5-5",
+  "cli_version": "2.1.312 (Claude Code)",
+  "error": "Independent review did not pass",
+  "failure_artifacts": {
+    "app.py": "def first():\n    return 3\n\ndef second():\n    return 2\n",
+    "package.json": "{\"scripts\": {\"test\": \"python3 -c \\\"import json,os,app; assert app.first()==int(os.environ[\\\\\\\"FLOW_EXPECTED_FIRST\\\\\\\"]); assert app.second()==2; print(json.dumps({\\\\\\\"first\\\\\\\":app.first(),\\\\\\\"second\\\\\\\":app.second()}))\\\"\"}}",
+    "docs/flow-manifest.json": "{\n  \"version\": 1,\n  \"scope\": {\n    \"include\": [\n      \"app.py\"\n    ],\n    \"exclude\": {}\n  },\n  \"sources\": [\n    {\n      \"path\": \"app.py\",\n      \"kind\": \"python\",\n      \"md5\": \"a4d6c6aca83cbcffb7446bb905064915\",\n      \"context_hash\": \"d0c24d701ec9f7364e747196bd4ed30675bb1d85f73c87af539b1caa1b38e351\",\n      \"symbols\": {\n        \"first\": \"55ecf945100dc6758f0bd5d71a24ab2cd579c96894d6d0e1ede5271f7c2a4b9b\",\n        \"second\": \"cdf5fda68bfe9d6e924fc55148ba48e8146d2d1c4bea6f927427bc533e6ff0f1\"\n      }\n    }\n  ],\n  \"features\": [\n    {\n      \"id\": \"one\",\n      \"flow\": \"docs/flows/one.mmd\",\n      \"mappings\": [\n        {\n          \"node\": \"A\",\n          \"path\": \"app.py\",\n          \"symbol\": \"first\"\n        }\n      ]\n    },\n    {\n      \"id\": \"two\",\n      \"flow\": \"docs/flows/two.mmd\",\n      \"mappings\": [\n        {\n          \"node\": \"A\",\n          \"path\": \"app.py\",\n          \"symbol\": \"second\"\n        }\n      ]\n    }\n  ],\n  \"reviews\": [],\n  \"policy_inputs\": [\n    \"package.json\"\n  ]\n}\n",
+    "docs/flows/one.mmd": "flowchart TD\nA[\"return 3\"]\n",
+    "docs/flows/two.mmd": "flowchart TD\nA[\"return 2\"]\n"
+  },
+  "usage": {
+    "scope": "recorded calls only",
+    "attempts": 2,
+    "phases": {
+      "synchronization": {
+        "attempts": 1,
+        "failed_attempts": 0,
+        "unknown_attempts": 0,
+        "known_tokens": 2535
+      },
+      "semantic_review": {
+        "attempts": 1,
+        "failed_attempts": 0,
+        "unknown_attempts": 0,
+        "known_tokens": 5551
+      }
+    },
+    "known": {
+      "uncached_input": 3390,
+      "cache_creation": 2970,
+      "cache_read": 0,
+      "output": 1726,
+      "input": 6360
+    },
+    "known_tokens": 8086,
+    "unknown_attempts": 0,
+    "total_tokens": 8086
+  }
+}

@@ -1,0 +1,150 @@
+{
+  "kind": "docs-sync-token-report",
+  "scope": "All model calls in the three controlled fixture attempts, including two incomplete trials; excludes development and separate implementation review.",
+  "observed": {
+    "scope": "recorded calls only",
+    "attempts": 5,
+    "phases": {
+      "synchronization": {
+        "attempts": 2,
+        "failed_attempts": 0,
+        "unknown_attempts": 0,
+        "known_tokens": 4905,
+        "known": {
+          "uncached_input": 2898,
+          "cache_creation": 1746,
+          "cache_read": 0,
+          "output": 261,
+          "input": 4644
+        },
+        "models": {
+          "claude-haiku-5-5": {
+            "uncached_input": 2894,
+            "cache_creation": 0,
+            "cache_read": 0,
+            "output": 201,
+            "input": 2894
+          },
+          "claude-opus-5-5": {
+            "uncached_input": 4,
+            "cache_creation": 1746,
+            "cache_read": 0,
+            "output": 60,
+            "input": 1750
+          }
+        }
+      },
+      "semantic_review": {
+        "attempts": 3,
+        "failed_attempts": 0,
+        "unknown_attempts": 0,
+        "known_tokens": 19802,
+        "known": {
+          "uncached_input": 8033,
+          "cache_creation": 7882,
+          "cache_read": 0,
+          "output": 3887,
+          "input": 15915
+        },
+        "models": {
+          "claude-haiku-5-5": {
+            "uncached_input": 8027,
+            "cache_creation": 0,
+            "cache_read": 0,
+            "output": 536,
+            "input": 8027
+          },
+          "claude-opus-5-5": {
+            "uncached_input": 6,
+            "cache_creation": 7882,
+            "cache_read": 0,
+            "output": 3351,
+            "input": 7888
+          }
+        }
+      }
+    },
+    "known": {
+      "uncached_input": 10931,
+      "cache_creation": 9628,
+      "cache_read": 0,
+      "output": 4148,
+      "input": 20559
+    },
+    "known_tokens": 24707,
+    "unknown_attempts": 0,
+    "total_tokens": 24707
+  },
+  "whole_task_total_tokens": null,
+  "unobserved": [
+    "parent Codex development/session attribution",
+    "any other uninstrumented task work"
+  ],
+  "sources": [
+    {
+      "ledger": "2026-10-29-flow-sync-execution.usage.jsonl",
+      "sha256": "4585efdefe251f32cdb14b780d9ec222579f5637579648d6a67c092e583a031a",
+      "execution_complete": false
+    },
+    {
+      "ledger": "2026-10-29-flow-sync-execution-final.usage.jsonl",
+      "sha256": "8e1f36e47e303f8da5536d7792a88c1e2b0256fe4bfb20c46f64a5d3e84c1c04",
+      "execution_complete": false
+    },
+    {
+      "ledger": "2026-10-29-flow-sync-execution-recovered.usage.jsonl",
+      "sha256": "24f3dfe444bc3135a83724d122a9f89f92fff177e14187bcf51719ab05c066e1",
+      "execution_complete": true
+    }
+  ],
+  "supporting_work": {
+    "scope": "Independent review of the implementation, outside the controlled sync fixture",
+    "ledger": "2026-10-29-flow-sync-validation.usage.jsonl",
+    "usage": {
+      "scope": "recorded calls only",
+      "attempts": 1,
+      "phases": {
+        "implementation_validation": {
+          "attempts": 1,
+          "failed_attempts": 0,
+          "unknown_attempts": 0,
+          "known_tokens": 55846,
+          "known": {
+            "uncached_input": 26947,
+            "cache_creation": 26342,
+            "cache_read": 0,
+            "output": 2557,
+            "input": 53289
+          },
+          "models": {
+            "claude-haiku-5-5": {
+              "uncached_input": 26945,
+              "cache_creation": 0,
+              "cache_read": 0,
+              "output": 22,
+              "input": 26945
+            },
+            "claude-opus-5-5": {
+              "uncached_input": 2,
+              "cache_creation": 26342,
+              "cache_read": 0,
+              "output": 2535,
+              "input": 26344
+            }
+          }
+        }
+      },
+      "known": {
+        "uncached_input": 26947,
+        "cache_creation": 26342,
+        "cache_read": 0,
+        "output": 2557,
+        "input": 53289
+      },
+      "known_tokens": 55846,
+      "unknown_attempts": 0,
+      "total_tokens": 55846
+    }
+  },
+  "known_task_subtotal_tokens": 80553
+}

@@ -253,9 +253,14 @@ Write the adoption report at the path specified in the [project-file layout](../
 | Delivery trigger and generation | Selected boundary, exact workflow/runner paths, tested event/candidate and result; distinguish agent preparation from unattended generation. No runner means automation incomplete. |
 | Structural checker | Exact base/candidate, worktree or staged mode, command and result; no semantic-correctness claim. |
 | Agent semantic review | Feature fingerprints, reviewer/evidence paths and findings; structured records do not authenticate a reviewer. |
+| Docs sync token usage | This delivery request's usage scope and evidence; per-phase/model input, cache creation/read and output, including failed attempts. State a measured total or partial/unknown coverage. |
 | Behavior and external inputs | Test/runtime evidence, external versions or observation time, and skipped cases. |
 | Visual inspection | Rendered diagrams/derived views inspected, or visual verification pending. |
 | CI, human and merge requirements | Actual required check/candidate, protected review settings and required human approvals; unverified remote controls remain unverified. |
+
+Account for synchronization, independent review, material recovery/retries and supporting preparation/validation separately. Capture native usage for each attempt before interpreting its result, including failed, malformed and timed-out calls. Preserve available counters; unknown usage is not zero. Deduplicate by request/attempt identity and include reported auxiliary models without adding cache or thinking subcounts twice.
+
+Keep usage receipts in existing task evidence outside flow fingerprints and policy inputs. State which agents/phases were observed and which were not; label a known subtotal as partial when coverage is missing. Charge only work attributable to this docs-sync request, separating unrelated coding and measurement experiments. Shared-session usage requires reliable request boundaries; otherwise report it unknown. No extra model call is needed to estimate usage, and missing telemetry does not block synchronization or invalidate semantic approval.
 
 ## Integration follow-ups
 

@@ -91,6 +91,8 @@ For partial staging, isolate the intended index contents before generation. `sna
 
 A runner needs a noninteractive model command, timeout/failure handling and duplicate-run protection. Reuse valid feature evidence on retries; generated outputs must not cause an endless generation loop. Missing credentials or review leave synchronization incomplete. Use a safe patch handoff for untrusted forks; do not execute untrusted PR code with privileged workflow credentials. Verify bot-generated commits receive the required checks and reviews before claiming completion. Post-commit or post-merge generation cannot guarantee that the original delivered candidate contains synchronized documents.
 
+Apply the same [correction and material-recovery limits](reviewer-prompt.md#correction-and-material-recovery) to unattended reviewer dispatch. Record a request identity at the first ready event or explicit user delivery request. Agent/runner commits for that task, retries and base revalidation retain its identity and budgets, regardless of push credentials. Start another request only for a recorded new user task or explicit user rerun; commit authors and event actors alone do not establish that boundary. Persist identity and per-feature attempts in existing runner/task evidence before task-owned pushes so subsequent jobs can retrieve them. If that state is unavailable, stop automatic dispatch and report automation incomplete.
+
 ## CLI and staged hook
 
 Python 3.10+ and Git are required. Native Python and file modes use only the standard library. Cross-language AST mode requires the pinned optional packages:
@@ -165,6 +167,8 @@ For interactions that benefit from `sequenceDiagram`, subgraphs or richer notati
 Dispatch [the independent reviewer prompt](reviewer-prompt.md) automatically when a fresh-subagent facility is available. Provide raw source/dependencies in addition to diff and flows; those alone may omit critical context. Retain required human approvals where repository policy specifies them.
 
 Save the reviewer response at the review-evidence path specified in the [project-file layout](../SKILL.md#project-files-and-responsibilities). Each manifest review entry contains `feature`, `fingerprint`, `reviewer`, `verdict: "pass"` and `evidence` pointing to that exact file. The file must identify the same feature, fingerprint, reviewer and passing verdict, with an empty `findings` list. A failed/incomplete response or stale fingerprint is rejected.
+
+Follow [review preparation](reviewer-prompt.md#review-preparation) for versioned material and full-feature responsibility. Partial passes cannot establish a feature review. Required unread/truncated material leaves review incomplete; raw attempts and recovery counts belong in existing task evidence. The checker validates declarations, not actual read coverage or retry counts.
 
 These fields form a structured declaration, not an authenticated or cryptographic signature. A malicious author can fabricate JSON. Where authenticity matters, the repository's protected review/check integration must establish it independently. If subagents are unavailable, report independent review incomplete and continue unrelated safe work. Never replace a required result with an author's self-approval.
 
@@ -281,5 +285,7 @@ Run mechanical cases through the real checker in isolated Git repositories. Veri
 - Invalid graph references, excessive nodes/branch depth and unsafe paths fail; loops terminate in finite time.
 
 Run agent-reading cases as isolated agent scenarios and inspect actual read/edit ordering; a read-set declaration alone is insufficient. Test tiny refactors, deletions, missing baselines, new capabilities, delegated work and expanded scope. Preserve project-specific image/production validation requirements when installing or modifying CI; unexecuted requirements remain incomplete.
+
+Also test large-input truncation and bounded recovery, exhausted retries without fingerprint resets, partial passes, changing candidates and repeated delivery preparation. Keep scenario results outside the installed skill.
 
 Report installed skill, root reading rule, source coverage, structural checker, agent review, visual inspection, required CI and remote merge enforcement separately. No individual result proves the entire workflow correct.

@@ -1,0 +1,36 @@
+{
+  "kind": "executed-fixture",
+  "complete": false,
+  "usage_ledger": "2026-10-29-flow-sync-execution.usage.jsonl",
+  "model": "claude-opus-5-5",
+  "cli_version": "2.1.312 (Claude Code)",
+  "error": "Independent review did not pass",
+  "usage": {
+    "scope": "recorded calls only",
+    "attempts": 2,
+    "phases": {
+      "synchronization": {
+        "attempts": 1,
+        "failed_attempts": 0,
+        "unknown_attempts": 0,
+        "known_tokens": 2370
+      },
+      "semantic_review": {
+        "attempts": 1,
+        "failed_attempts": 0,
+        "unknown_attempts": 0,
+        "known_tokens": 4450
+      }
+    },
+    "known": {
+      "uncached_input": 3291,
+      "cache_creation": 2229,
+      "cache_read": 0,
+      "output": 1300,
+      "input": 5520
+    },
+    "known_tokens": 6820,
+    "unknown_attempts": 0,
+    "total_tokens": 6820
+  }
+}

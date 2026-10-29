@@ -33,20 +33,40 @@ SYSTEM = ('Apply the supplied instruction package to the case. This is a decisio
           'Return no explanation. Do not use tools.')
 
 
-def measurement(result, model):
+def usage_counts(result):
     usage = result.get('modelUsage', {})
-    if result.get('is_error') or model not in usage:
-        raise ValueError('Successful result with usage for the requested model is required')
+    if not isinstance(usage, dict) or not usage:
+        raise ValueError('Model usage is unavailable')
     models = {}
     for name, values in usage.items():
+        if not isinstance(values, dict):
+            raise ValueError('Invalid model counters')
         counts = {key: values.get(field) for key, field in FIELDS.items()}
         if any(type(value) is not int or value < 0 for value in counts.values()):
             raise ValueError('Missing or invalid model token counters')
         counts['input'] = sum(counts[key] for key in ('uncached_input', 'cache_creation', 'cache_read'))
         models[name] = counts
+    return {'models': models, 'total': {key: sum(row[key] for row in models.values())
+                                      for key in next(iter(models.values()))}}
+
+
+def response_json(result):
     if not isinstance(result.get('result'), str):
         raise ValueError('Missing decision text')
-    decision = json.loads(result['result'])
+    text = result['result'].strip()
+    if text.startswith('```json\n') and text.endswith('\n```'):
+        text = text[8:-4]
+    value = json.loads(text)
+    if not isinstance(value, dict):
+        raise ValueError('Expected a JSON object')
+    return value
+
+
+def measurement(result, model):
+    counts = usage_counts(result)
+    if result.get('is_error') or model not in counts['models']:
+        raise ValueError('Successful result with usage for the requested model is required')
+    decision = response_json(result)
     keys = {'sync', 'review_dispatches', 'complete', 'recovery_remaining'}
     if not isinstance(decision, dict) or set(decision) != keys:
         raise ValueError('Unexpected decision shape')
@@ -58,8 +78,106 @@ def measurement(result, model):
             continue
         if type(value) is not int or value < 0:
             raise ValueError('Invalid decision counter')
-    return {'models': models, 'total': {key: sum(row[key] for row in models.values())
-                                      for key in models[model]}, 'decision': decision}
+    return {**counts, 'decision': decision}
+
+
+def model_command(claude, model, system):
+    return [claude, '--print', '--output-format', 'json', '--model', model,
+            '--effort', 'low', '--safe-mode', '--setting-sources', '',
+            '--strict-mcp-config', '--mcp-config', '{"mcpServers":{}}',
+            '--tools', '', '--no-session-persistence', '--max-budget-usd', '1',
+            '--system-prompt', system]
+
+
+def invoke(command, prompt, directory, ledger, phase, attempt, model, parse=response_json):
+    row = {'attempt': attempt, 'phase': phase, 'status': 'failed', 'usage': None,
+           'prompt_sha256': hashlib.sha256(prompt.encode()).hexdigest()}
+    payload, error, value = {}, None, None
+    try:
+        response = subprocess.run(command, input=prompt, cwd=directory,
+                                  capture_output=True, text=True, timeout=180, check=False)
+        raw = response.stdout
+        if response.returncode:
+            error = f'CLI exit {response.returncode}'
+    except subprocess.TimeoutExpired as failure:
+        raw, error = failure.stdout or '', 'timeout'
+    except OSError:
+        raw, error = '', 'CLI unavailable'
+    try:
+        payload = json.loads(raw)
+        if not isinstance(payload, dict):
+            raise ValueError('Expected result object')
+    except (ValueError, TypeError):
+        payload = {}
+        error = error or 'invalid CLI JSON'
+    row['reported_usage'] = payload.get('modelUsage', {})
+    row['response'] = payload.get('result')
+    try:
+        row['usage'] = usage_counts(payload)
+    except (ValueError, AttributeError, TypeError):
+        pass
+    if not error:
+        reported = payload.get('modelUsage')
+        if payload.get('is_error') or (isinstance(reported, dict) and reported and model not in reported):
+            error = 'failed call or requested model absent'
+        else:
+            try:
+                value = parse(payload)
+                row['status'] = 'success'
+            except Exception as failure:
+                row['status'], error = 'invalid_response', f'response validation: {type(failure).__name__}'
+    row['error'] = error
+    ledger.parent.mkdir(parents=True, exist_ok=True)
+    with ledger.open('a') as handle:
+        handle.write(json.dumps(row) + '\n')
+    if error:
+        raise RuntimeError(error)
+    return value
+
+
+def usage_summary(ledger):
+    attempts, phases = {}, {}
+    known = dict.fromkeys((*FIELDS, 'input'), 0)
+    for line in ledger.read_text().splitlines() if ledger.exists() else []:
+        row = json.loads(line)
+        previous = attempts.get(row['attempt'])
+        if previous is not None:
+            if row != previous:
+                raise ValueError('Conflicting attempt identity')
+            continue
+        attempts[row['attempt']] = row
+        phase = phases.setdefault(row['phase'], {'attempts': 0, 'failed_attempts': 0,
+                                                'unknown_attempts': 0, 'known_tokens': 0,
+                                                'known': dict.fromkeys(known, 0), 'models': {}})
+        phase['attempts'] += 1
+        phase['failed_attempts'] += row['status'] != 'success'
+        if row['usage'] is None:
+            phase['unknown_attempts'] += 1
+        else:
+            total = row['usage']['total']
+            phase['known_tokens'] += total['input'] + total['output']
+            for key in known:
+                known[key] += total[key]
+                phase['known'][key] += total[key]
+            for model, counters in row['usage']['models'].items():
+                accumulated = phase['models'].setdefault(model, dict.fromkeys(known, 0))
+                for key in known:
+                    accumulated[key] += counters[key]
+    unknown = sum(phase['unknown_attempts'] for phase in phases.values())
+    subtotal = known['input'] + known['output']
+    return {'scope': 'recorded calls only', 'attempts': len(attempts), 'phases': phases,
+            'known': known, 'known_tokens': subtotal, 'unknown_attempts': unknown,
+            'total_tokens': None if unknown else subtotal}
+
+
+def review_context(root, execution):
+    package = root / 'package.json'
+    return {'test_commands': json.loads(package.read_text()).get('scripts', {}) if package.exists() else {},
+            'configuration_files': {'package.json': package.read_text()} if package.exists() else {},
+            'ci': {str(path.relative_to(root)): path.read_text()
+                   for path in sorted((root / '.github/workflows').glob('*'))
+                   if path.suffix in ('.yml', '.yaml')}, 'execution': execution,
+            'missing_configuration': [] if package.exists() else ['project test configuration not supplied']}
 
 
 def git(*args):
@@ -74,23 +192,25 @@ def main():
     parser.add_argument('--claude', default='claude')
     parser.add_argument('--repetitions', type=int, default=2)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--phase', default='decision')
     args = parser.parse_args()
     if args.repetitions < 1:
         parser.error('--repetitions must be positive')
     revisions = {name: git('rev-parse', f'{ref}^{{commit}}')
                  for name, ref in (('before', args.before), ('after', args.after))}
-    report = {'schema': 1, 'kind': 'decision-only', 'revisions': revisions,
+    report = {'schema': 2, 'kind': 'decision-only', 'revisions': revisions,
               'model': args.model, 'effort': 'low', 'repetitions': args.repetitions,
               'cli_version': subprocess.check_output([args.claude, '--version'], text=True).strip(),
               'cases': CASES, 'complete': False, 'samples': []}
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with args.output.open('x') as handle:
         json.dump(report, handle, indent=2)
-    command = [args.claude, '--print', '--output-format', 'json', '--model', args.model,
-               '--effort', 'low', '--safe-mode', '--setting-sources', '',
-               '--strict-mcp-config', '--mcp-config', '{"mcpServers":{}}',
-               '--tools', '', '--no-session-persistence', '--max-budget-usd', '1',
-               '--system-prompt', SYSTEM]
+    ledger = args.output.with_suffix('.usage.jsonl')
+    with ledger.open('x'):
+        pass
+    report['usage_ledger'] = ledger.name
+    args.output.write_text(json.dumps(report, indent=2) + '\n')
+    command = model_command(args.claude, args.model, SYSTEM)
     with tempfile.TemporaryDirectory(prefix='flow-tokens-') as directory:
         for case, definition in CASES.items():
             for repetition in range(args.repetitions):
@@ -100,16 +220,23 @@ def main():
                                  for path in definition['files']}
                     prompt = '\n\n'.join(f'FILE {path}\n{text}' for path, text in documents.items())
                     prompt += '\n\nCASE\n' + definition['state']
-                    response = subprocess.run(command, input=prompt, cwd=directory,
-                                              capture_output=True, text=True, timeout=180, check=True)
-                    sample = measurement(json.loads(response.stdout), args.model)
+                    try:
+                        sample = invoke(command, prompt, directory, ledger, args.phase,
+                                        f'{case}/{variant}/{repetition}', args.model,
+                                        parse=lambda result: measurement(result, args.model))
+                    except Exception as failure:
+                        report.update(error=str(failure), usage=usage_summary(ledger))
+                        args.output.write_text(json.dumps(report, indent=2) + '\n')
+                        raise
                     sample.update(case=case, variant=variant, repetition=repetition,
                                   prompt_sha256=hashlib.sha256(prompt.encode()).hexdigest())
                     report['samples'].append(sample)
+                    report['usage'] = usage_summary(ledger)
                     args.output.write_text(json.dumps(report, indent=2) + '\n')
                     print(json.dumps({'case': case, 'variant': variant, 'repetition': repetition,
                                       **sample['total']}), flush=True)
     report['complete'] = True
+    report['usage'] = usage_summary(ledger)
     args.output.write_text(json.dumps(report, indent=2) + '\n')
 
 

@@ -8,6 +8,8 @@ The installation tests compare packaged resources and validate relative Markdown
 
 When changing flow-docs-sync instructions, give a fresh reviewer the raw cases from [the delivery scenarios](../tests/scenarios/flow-docs-sync.md). Keep the rubric out of the initial scenario prompt. The reviewer owns cross-file consistency and whether agent decisions match the intended delivery boundary; deterministic tests own file/path/anchor rules.
 
+Attach actual test commands from project configuration, relevant CI configuration and recorded execution evidence to the review packet. Withholding expected case decisions does not require withholding these inputs; do not make reviewers guess discovery defaults.
+
 Record case decisions, source evidence, candidate identity and unverified behavior in the PR. A passing package test does not establish that a GitHub event invokes an AI model. Flow generation and the final candidate validator need separate integration evidence.
 
 ## Global installation provenance

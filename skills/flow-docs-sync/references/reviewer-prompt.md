@@ -21,7 +21,9 @@ Inputs:
 - The manifest's exact flow path, relevant document paths and recorded layout overrides.
 - Versioned paths/ranges for raw diff and base/candidate source, module context and dependencies.
 - Base/candidate flow sources, mappings and relevant contracts.
-- Behavioral test code and execution evidence, with unverified items marked.
+- Behavioral test code, exact configured test command, relevant build/CI
+  configuration, tested input identity and execution result. Mark missing
+  configuration or execution unverified rather than assuming tool defaults.
 
 Verify the feature's actual branches, interactions, errors, cancellation,
 recovery and side effects against its flow. Check hidden impact from removed

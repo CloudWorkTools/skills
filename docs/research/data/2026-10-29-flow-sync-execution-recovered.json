@@ -1,0 +1,147 @@
+{
+  "kind": "executed-fixture",
+  "complete": true,
+  "usage_ledger": "2026-10-29-flow-sync-execution-recovered.usage.jsonl",
+  "model": "claude-opus-5-5",
+  "cli_version": "2.1.312 (Claude Code)",
+  "base": "4779b512a93f0f21ec97b4d7293017cee635f04a",
+  "events": [
+    {
+      "state": "draft",
+      "model_calls": 0,
+      "status": "pending"
+    },
+    {
+      "state": "ready",
+      "affected": [
+        "one"
+      ],
+      "model_calls": 1,
+      "generation_reused": true,
+      "checker_exit": 0,
+      "checker_output": "check passed (worktree); affected features: one"
+    },
+    {
+      "state": "repeated_ready",
+      "affected": [],
+      "model_calls": 0,
+      "generation_reused": false,
+      "checker_exit": 0,
+      "checker_output": "check passed (worktree); affected features: one"
+    },
+    {
+      "state": "cosmetic",
+      "affected": [],
+      "model_calls": 0,
+      "generation_reused": false,
+      "checker_exit": 0,
+      "checker_output": "check passed (worktree); affected features: one"
+    }
+  ],
+  "scope": "Two fixture functions; no product deployment or unattended GitHub runner.",
+  "review": {
+    "feature": "one",
+    "fingerprint": "52ccc8f0c742ce005c13d4769e9ed1566b556ce73c6348572da7ca85c730b4d1",
+    "reviewer": "fixture-review-4c4365f7-2bbd-4860-956d-3a8921f04bcc",
+    "verdict": "pass",
+    "findings": [],
+    "evidence": [
+      "Base 4779b512a93f0f21ec97b4d7293017cee635f04a app.py lines 1-5, read in full: first() returns 1 and second() returns 2.",
+      "Candidate 7da101d8ef37f2e25976fccec5f621998cbe6729 app.py lines 1-5, read in full: first() returns 3 and second() returns 2. first() has a single unconditional return. It has no branches, interactions, errors, cancellation, recovery or side effects.",
+      "Raw diff app.py hunk @@ -1,5 +1,5 @@: the only source change is 'return 1' -> 'return 3' in first(). second() is byte-identical. No imports, globals or new entrypoints were added, and context_hash d0c24d70... is unchanged between the base and candidate manifests.",
+      "docs/flows/one.mmd, base lines 1-2 and candidate lines 1-2, read in full: node A changes from 'return 1' to 'return 3'. This matches candidate first(), which is mapped to node A in docs/flow-manifest.json feature 'one'.",
+      "docs/flow-manifest.json, base and candidate, read in full: feature mappings are identical, so no mappings were removed. Only the md5 for app.py and the symbol hash for 'first' changed. The symbol hash for 'second' (cdf5fda6...) is unchanged.",
+      "Feature 'two' is unaffected for a supported reason: its only mapped symbol, second(), is byte-identical in base and candidate, and the context hash is unchanged.",
+      "Layout overrides are empty. The requirement 'first() returns 3, second() keeps returning 2' is satisfied by both the source and the flow.",
+      "Test configuration: the package.json scripts.test command matches validation.test_commands.test. The recorded execution ran with FLOW_EXPECTED_FIRST=3, exited 0, and printed stdout {\"first\": 3, \"second\": 2}. The recorded candidate_source_sha256 is 4fbfe182...."
+    ],
+    "limitations": [
+      "The candidate_source_sha256 binding the test execution to the candidate snapshot was not independently recomputed in this read-only review. The supplied execution record is relied on as stated.",
+      "No external contracts, dependencies or CI configuration exist in this fixture (ci: {}). Rendering, deployment and CI integration are outside scope.",
+      "The content of docs/flows/two.mmd was not supplied. It is not changed in the raw diff, and its mapped symbol is unchanged, so no update is required."
+    ]
+  },
+  "validation": {
+    "test_commands": {
+      "test": "python3 -c \"import json,os,app; assert app.first()==int(os.environ[\\\"FLOW_EXPECTED_FIRST\\\"]); assert app.second()==2; print(json.dumps({\\\"first\\\":app.first(),\\\"second\\\":app.second()}))\""
+    },
+    "configuration_files": {
+      "package.json": "{\"scripts\": {\"test\": \"python3 -c \\\"import json,os,app; assert app.first()==int(os.environ[\\\\\\\"FLOW_EXPECTED_FIRST\\\\\\\"]); assert app.second()==2; print(json.dumps({\\\\\\\"first\\\\\\\":app.first(),\\\\\\\"second\\\\\\\":app.second()}))\\\"\"}}"
+    },
+    "ci": {},
+    "execution": {
+      "command": [
+        "/usr/bin/python3",
+        "-c",
+        "import json,os,app; assert app.first()==int(os.environ[\"FLOW_EXPECTED_FIRST\"]); assert app.second()==2; print(json.dumps({\"first\":app.first(),\"second\":app.second()}))"
+      ],
+      "exit_code": 0,
+      "stdout": "{\"first\": 3, \"second\": 2}",
+      "python": "3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]",
+      "environment": {
+        "FLOW_EXPECTED_FIRST": "3"
+      },
+      "candidate_source_sha256": "4fbfe182b02af38230dcc6900385d04aadae91a3410cc16f12a5da3c617456f8"
+    },
+    "missing_configuration": []
+  },
+  "flows": {
+    "one": "flowchart TD\nA[\"return 3\"]\n",
+    "two": "flowchart TD\nA[\"return 2\"]\n"
+  },
+  "fingerprints": {
+    "one": "52ccc8f0c742ce005c13d4769e9ed1566b556ce73c6348572da7ca85c730b4d1",
+    "two": "d53d213389fec9a7635362488f411cfb7625be2e19ec4bbe86f2899b6fe38e8b"
+  },
+  "candidate_source": "def first():\n    return 3\n\ndef second():\n    return 2\n\n# layout-only task\n",
+  "generation_reuse": {
+    "source_report": "2026-10-29-flow-sync-execution-final.json",
+    "sha256": "e11033a7183eddfa17c037dcc8faf46765fcca200a07ad75feb843f6981a3edc"
+  },
+  "usage": {
+    "scope": "recorded calls only",
+    "attempts": 1,
+    "phases": {
+      "semantic_review": {
+        "attempts": 1,
+        "failed_attempts": 0,
+        "unknown_attempts": 0,
+        "known_tokens": 9801,
+        "known": {
+          "uncached_input": 4250,
+          "cache_creation": 4429,
+          "cache_read": 0,
+          "output": 1122,
+          "input": 8679
+        },
+        "models": {
+          "claude-haiku-5-5": {
+            "uncached_input": 4248,
+            "cache_creation": 0,
+            "cache_read": 0,
+            "output": 20,
+            "input": 4248
+          },
+          "claude-opus-5-5": {
+            "uncached_input": 2,
+            "cache_creation": 4429,
+            "cache_read": 0,
+            "output": 1102,
+            "input": 4431
+          }
+        }
+      }
+    },
+    "known": {
+      "uncached_input": 4250,
+      "cache_creation": 4429,
+      "cache_read": 0,
+      "output": 1122,
+      "input": 8679
+    },
+    "known_tokens": 9801,
+    "unknown_attempts": 0,
+    "total_tokens": 9801
+  },
+  "usage_recomputed_from": "2026-10-29-flow-sync-execution-recovered.usage.jsonl"
+}

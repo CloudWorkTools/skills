@@ -1,0 +1,456 @@
+{
+  "schema": 1,
+  "kind": "decision-only",
+  "revisions": {
+    "before": "b17df8308b674704f9c0aab13cd4db434609e2c4",
+    "after": "d1cfa7cec2af1799455887cd30c0be1052ad4323"
+  },
+  "model": "claude-opus-5-5",
+  "effort": "low",
+  "repetitions": 2,
+  "cli_version": "2.1.312 (Claude Code)",
+  "cases": {
+    "draft": {
+      "files": [
+        "SKILL.md"
+      ],
+      "state": "Save a WIP commit on a Draft PR. Logic changed; baseline flows remain trusted. No delivery was requested."
+    },
+    "unchanged": {
+      "files": [
+        "SKILL.md"
+      ],
+      "state": "Prepare the same ready PR again. Every bound input and feature fingerprint still matches passing review evidence. Required candidate checks have passed. Only a review-result file was added outside fingerprints."
+    },
+    "material_recovery": {
+      "files": [
+        "SKILL.md",
+        "references/reviewer-prompt.md"
+      ],
+      "state": "Finish ready delivery. Two ended reviewer attempts returned incomplete with no findings because source/diff output was truncated. No bound input changed. The existing flow is correct. Named missing ranges are now accessible in bounded reads. The coordinator called these two fix/review rounds."
+    }
+  },
+  "complete": true,
+  "samples": [
+    {
+      "models": {
+        "claude-haiku-5-5": {
+          "uncached_input": 8373,
+          "cache_creation": 0,
+          "cache_read": 0,
+          "output": 23,
+          "input": 8373
+        },
+        "claude-opus-5-5": {
+          "uncached_input": 2,
+          "cache_creation": 7894,
+          "cache_read": 0,
+          "output": 37,
+          "input": 7896
+        }
+      },
+      "total": {
+        "uncached_input": 8375,
+        "cache_creation": 7894,
+        "cache_read": 0,
+        "output": 60,
+        "input": 16269
+      },
+      "decision": {
+        "sync": false,
+        "review_dispatches": 0,
+        "complete": false,
+        "recovery_remaining": null
+      },
+      "case": "draft",
+      "variant": "before",
+      "repetition": 0,
+      "prompt_sha256": "2e063b3887eea99db71631ebe3f185f185bbdec2a3f33aa46b2712ea81bf5134"
+    },
+    {
+      "models": {
+        "claude-haiku-5-5": {
+          "uncached_input": 8514,
+          "cache_creation": 0,
+          "cache_read": 0,
+          "output": 21,
+          "input": 8514
+        },
+        "claude-opus-5-5": {
+          "uncached_input": 2,
+          "cache_creation": 8035,
+          "cache_read": 0,
+          "output": 37,
+          "input": 8037
+        }
+      },
+      "total": {
+        "uncached_input": 8516,
+        "cache_creation": 8035,
+        "cache_read": 0,
+        "output": 58,
+        "input": 16551
+      },
+      "decision": {
+        "sync": false,
+        "review_dispatches": 0,
+        "complete": false,
+        "recovery_remaining": null
+      },
+      "case": "draft",
+      "variant": "after",
+      "repetition": 0,
+      "prompt_sha256": "8fe3b1eb53aa1dd04b3beba35fa24be0f681e41f5cc6e88d5890898cbddc8dd7"
+    },
+    {
+      "models": {
+        "claude-haiku-5-5": {
+          "uncached_input": 8514,
+          "cache_creation": 0,
+          "cache_read": 0,
+          "output": 27,
+          "input": 8514
+        },
+        "claude-opus-5-5": {
+          "uncached_input": 2,
+          "cache_creation": 0,
+          "cache_read": 8035,
+          "output": 37,
+          "input": 8037
+        }
+      },
+      "total": {
+        "uncached_input": 8516,
+        "cache_creation": 0,
+        "cache_read": 8035,
+        "output": 64,
+        "input": 16551
+      },
+      "decision": {
+        "sync": false,
+        "review_dispatches": 0,
+        "complete": false,
+        "recovery_remaining": null
+      },
+      "case": "draft",
+      "variant": "after",
+      "repetition": 1,
+      "prompt_sha256": "8fe3b1eb53aa1dd04b3beba35fa24be0f681e41f5cc6e88d5890898cbddc8dd7"
+    },
+    {
+      "models": {
+        "claude-haiku-5-5": {
+          "uncached_input": 8373,
+          "cache_creation": 0,
+          "cache_read": 0,
+          "output": 23,
+          "input": 8373
+        },
+        "claude-opus-5-5": {
+          "uncached_input": 2,
+          "cache_creation": 0,
+          "cache_read": 7894,
+          "output": 37,
+          "input": 7896
+        }
+      },
+      "total": {
+        "uncached_input": 8375,
+        "cache_creation": 0,
+        "cache_read": 7894,
+        "output": 60,
+        "input": 16269
+      },
+      "decision": {
+        "sync": false,
+        "review_dispatches": 0,
+        "complete": false,
+        "recovery_remaining": null
+      },
+      "case": "draft",
+      "variant": "before",
+      "repetition": 1,
+      "prompt_sha256": "2e063b3887eea99db71631ebe3f185f185bbdec2a3f33aa46b2712ea81bf5134"
+    },
+    {
+      "models": {
+        "claude-haiku-5-5": {
+          "uncached_input": 8395,
+          "cache_creation": 0,
+          "cache_read": 0,
+          "output": 23,
+          "input": 8395
+        },
+        "claude-opus-5-5": {
+          "uncached_input": 2,
+          "cache_creation": 7916,
+          "cache_read": 0,
+          "output": 37,
+          "input": 7918
+        }
+      },
+      "total": {
+        "uncached_input": 8397,
+        "cache_creation": 7916,
+        "cache_read": 0,
+        "output": 60,
+        "input": 16313
+      },
+      "decision": {
+        "sync": false,
+        "review_dispatches": 0,
+        "complete": true,
+        "recovery_remaining": null
+      },
+      "case": "unchanged",
+      "variant": "before",
+      "repetition": 0,
+      "prompt_sha256": "c81e19bfe04448c687fb9b8e5db4c5583e4705967016163ef26d6bed1fd32f5c"
+    },
+    {
+      "models": {
+        "claude-haiku-5-5": {
+          "uncached_input": 8536,
+          "cache_creation": 0,
+          "cache_read": 0,
+          "output": 23,
+          "input": 8536
+        },
+        "claude-opus-5-5": {
+          "uncached_input": 2,
+          "cache_creation": 8057,
+          "cache_read": 0,
+          "output": 37,
+          "input": 8059
+        }
+      },
+      "total": {
+        "uncached_input": 8538,
+        "cache_creation": 8057,
+        "cache_read": 0,
+        "output": 60,
+        "input": 16595
+      },
+      "decision": {
+        "sync": false,
+        "review_dispatches": 0,
+        "complete": true,
+        "recovery_remaining": null
+      },
+      "case": "unchanged",
+      "variant": "after",
+      "repetition": 0,
+      "prompt_sha256": "34d3e2bf1a9bf82fc2fbcc114796686c2f390d9a8463bca667aedcc815a9171e"
+    },
+    {
+      "models": {
+        "claude-haiku-5-5": {
+          "uncached_input": 8536,
+          "cache_creation": 0,
+          "cache_read": 0,
+          "output": 23,
+          "input": 8536
+        },
+        "claude-opus-5-5": {
+          "uncached_input": 2,
+          "cache_creation": 0,
+          "cache_read": 8057,
+          "output": 37,
+          "input": 8059
+        }
+      },
+      "total": {
+        "uncached_input": 8538,
+        "cache_creation": 0,
+        "cache_read": 8057,
+        "output": 60,
+        "input": 16595
+      },
+      "decision": {
+        "sync": false,
+        "review_dispatches": 0,
+        "complete": true,
+        "recovery_remaining": null
+      },
+      "case": "unchanged",
+      "variant": "after",
+      "repetition": 1,
+      "prompt_sha256": "34d3e2bf1a9bf82fc2fbcc114796686c2f390d9a8463bca667aedcc815a9171e"
+    },
+    {
+      "models": {
+        "claude-haiku-5-5": {
+          "uncached_input": 8395,
+          "cache_creation": 0,
+          "cache_read": 0,
+          "output": 26,
+          "input": 8395
+        },
+        "claude-opus-5-5": {
+          "uncached_input": 2,
+          "cache_creation": 0,
+          "cache_read": 7916,
+          "output": 37,
+          "input": 7918
+        }
+      },
+      "total": {
+        "uncached_input": 8397,
+        "cache_creation": 0,
+        "cache_read": 7916,
+        "output": 63,
+        "input": 16313
+      },
+      "decision": {
+        "sync": false,
+        "review_dispatches": 0,
+        "complete": true,
+        "recovery_remaining": null
+      },
+      "case": "unchanged",
+      "variant": "before",
+      "repetition": 1,
+      "prompt_sha256": "c81e19bfe04448c687fb9b8e5db4c5583e4705967016163ef26d6bed1fd32f5c"
+    },
+    {
+      "models": {
+        "claude-haiku-5-5": {
+          "uncached_input": 9382,
+          "cache_creation": 0,
+          "cache_read": 0,
+          "output": 325,
+          "input": 9382
+        },
+        "claude-opus-5-5": {
+          "uncached_input": 2,
+          "cache_creation": 8903,
+          "cache_read": 0,
+          "output": 455,
+          "input": 8905
+        }
+      },
+      "total": {
+        "uncached_input": 9384,
+        "cache_creation": 8903,
+        "cache_read": 0,
+        "output": 780,
+        "input": 18287
+      },
+      "decision": {
+        "sync": false,
+        "review_dispatches": 1,
+        "complete": false,
+        "recovery_remaining": null
+      },
+      "case": "material_recovery",
+      "variant": "before",
+      "repetition": 0,
+      "prompt_sha256": "a87273c93f8f54a55e1d0bab6f7c5820e3cd5e3a51edc27b83bbab79cd09a725"
+    },
+    {
+      "models": {
+        "claude-haiku-5-5": {
+          "uncached_input": 10571,
+          "cache_creation": 0,
+          "cache_read": 0,
+          "output": 223,
+          "input": 10571
+        },
+        "claude-opus-5-5": {
+          "uncached_input": 2,
+          "cache_creation": 10092,
+          "cache_read": 0,
+          "output": 275,
+          "input": 10094
+        }
+      },
+      "total": {
+        "uncached_input": 10573,
+        "cache_creation": 10092,
+        "cache_read": 0,
+        "output": 498,
+        "input": 20665
+      },
+      "decision": {
+        "sync": false,
+        "review_dispatches": 1,
+        "complete": false,
+        "recovery_remaining": 1
+      },
+      "case": "material_recovery",
+      "variant": "after",
+      "repetition": 0,
+      "prompt_sha256": "a4d0c684563d00e6d96a03add763d93f758edf0323368d0e6b82e4c8ef40e38a"
+    },
+    {
+      "models": {
+        "claude-haiku-5-5": {
+          "uncached_input": 10571,
+          "cache_creation": 0,
+          "cache_read": 0,
+          "output": 273,
+          "input": 10571
+        },
+        "claude-opus-5-5": {
+          "uncached_input": 2,
+          "cache_creation": 0,
+          "cache_read": 10092,
+          "output": 249,
+          "input": 10094
+        }
+      },
+      "total": {
+        "uncached_input": 10573,
+        "cache_creation": 0,
+        "cache_read": 10092,
+        "output": 522,
+        "input": 20665
+      },
+      "decision": {
+        "sync": false,
+        "review_dispatches": 1,
+        "complete": false,
+        "recovery_remaining": 1
+      },
+      "case": "material_recovery",
+      "variant": "after",
+      "repetition": 1,
+      "prompt_sha256": "a4d0c684563d00e6d96a03add763d93f758edf0323368d0e6b82e4c8ef40e38a"
+    },
+    {
+      "models": {
+        "claude-haiku-5-5": {
+          "uncached_input": 9382,
+          "cache_creation": 0,
+          "cache_read": 0,
+          "output": 27,
+          "input": 9382
+        },
+        "claude-opus-5-5": {
+          "uncached_input": 2,
+          "cache_creation": 0,
+          "cache_read": 8903,
+          "output": 459,
+          "input": 8905
+        }
+      },
+      "total": {
+        "uncached_input": 9384,
+        "cache_creation": 0,
+        "cache_read": 8903,
+        "output": 486,
+        "input": 18287
+      },
+      "decision": {
+        "sync": false,
+        "review_dispatches": 1,
+        "complete": false,
+        "recovery_remaining": null
+      },
+      "case": "material_recovery",
+      "variant": "before",
+      "repetition": 1,
+      "prompt_sha256": "a87273c93f8f54a55e1d0bab6f7c5820e3cd5e3a51edc27b83bbab79cd09a725"
+    }
+  ]
+}

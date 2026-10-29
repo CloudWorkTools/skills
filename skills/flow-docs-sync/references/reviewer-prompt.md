@@ -57,6 +57,8 @@ The coordinator allows an initial review and at most two finding-correction/re-r
 
 An `incomplete` result with no demonstrated findings uses a separate material-recovery budget. Continue bounded reading with the current reviewer when possible. After an ended attempt, allow at most two recovery redispatches per feature in that delivery request. Each must supply the named missing artifacts or repair access to the named ranges. Unrelated additions and identical failed reading methods do not justify redispatch.
 
+For an unusable or stale attempt without named gaps, record and address its concrete failure cause before recovery redispatch, such as a timeout or candidate change. Pin replacement material to a stable snapshot; the same recovery limit applies.
+
 Every redispatch after a non-passing or unusable attempt consumes the applicable budget, including attempts invalidated by candidate changes. Demonstrated findings use the correction budget; otherwise missing, partial or stale inputs use material recovery. Address the named findings or gaps before redispatch.
 
 Neither budget resets when a fingerprint, commit, base or reviewer changes within the request. Preserve each raw result, attempt count, named gap and supplied evidence in existing task evidence. Do not overwrite the attempt history with the final passing record. Recompute the candidate fingerprint before accepting a result; changed bound inputs invalidate it rather than allowing its fingerprint to be rewritten.

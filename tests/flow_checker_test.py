@@ -77,6 +77,129 @@ class CheckerTests(unittest.TestCase):
         self.cli('snapshot')
         self.cli('check', '--base', 'HEAD', ok=False)
 
+    def test_feature_policy_changes_only_owner_and_dependents(self):
+        self.write('one-test.txt', 'initial')
+        self.write('unrelated-test.txt', 'initial')
+        self.manifest['features'][0]['policy_inputs'] = ['one-test.txt']
+        self.save()
+        self.baseline()
+        original = {name: self.cli('fingerprint', '--feature', name, '--base', 'HEAD')
+                    for name in ('one', 'two')}
+        self.write('one-test.txt', 'changed')
+        self.assertNotEqual(original['one'], self.cli('fingerprint', '--feature', 'one', '--base', 'HEAD'))
+        self.assertEqual(original['two'], self.cli('fingerprint', '--feature', 'two', '--base', 'HEAD'))
+        self.manifest['features'][1]['depends_on'] = ['one']
+        self.save()
+        inherited = self.cli('fingerprint', '--feature', 'two', '--base', 'HEAD')
+        self.write('one-test.txt', 'changed again')
+        self.assertNotEqual(inherited, self.cli('fingerprint', '--feature', 'two', '--base', 'HEAD'))
+
+    def test_feature_policy_validation_fails_closed(self):
+        self.baseline()
+        for value in ('app.py', ['missing'], ['../escape'], ['app.py', 'app.py'], [3]):
+            with self.subTest(value=value):
+                self.manifest['features'][0]['policy_inputs'] = value
+                self.save()
+                error = self.cli('check', '--base', 'HEAD', ok=False)
+                self.assertNotIn('missing current review', error)
+
+    def test_explain_lists_all_gaps_without_approval(self):
+        self.baseline()
+        self.write('app.py', 'VALUE = 2\ndef first():\n    return VALUE\ndef second():\n    return 2\n')
+        self.cli('snapshot')
+        report = json.loads(self.cli('explain', '--base', 'HEAD'))
+        self.assertEqual(report['affected_features'], ['one', 'two'])
+        self.assertEqual({x['feature'] for x in report['missing_review_evidence']}, {'one', 'two'})
+        self.assertEqual(report['resolved_base'], self.git('rev-parse', 'HEAD').decode().strip())
+        self.cli('check', '--base', 'HEAD', ok=False)
+
+    def test_explain_reports_invalid_evidence_and_keeps_other_gaps(self):
+        self.baseline()
+        self.write('app.py', 'VALUE = 2\ndef first():\n    return VALUE\ndef second():\n    return 2\n')
+        self.cli('snapshot')
+        self.manifest = json.loads((self.root / 'docs/flow-manifest.json').read_text())
+        self.review('one')
+        self.write('reviews/one.json', '{}')
+        report = json.loads(self.cli('explain', '--base', 'HEAD'))
+        self.assertEqual({x['feature']: x['reason'] for x in report['missing_review_evidence']},
+                         {'one': 'invalid review evidence', 'two': 'missing current review'})
+        self.cli('check', '--base', 'HEAD', ok=False)
+
+    def test_removing_archival_review_pointers_does_not_change_fingerprints(self):
+        self.baseline()
+        self.write('docs/one.mmd', 'flowchart TD\nA["changed"]\n')
+        self.review('one')
+        before = self.cli('fingerprint', '--feature', 'one', '--base', 'HEAD')
+        self.manifest['reviews'].append({'feature': 'one', 'fingerprint': 'old',
+                                        'reviewer': 'historical', 'verdict': 'pass', 'evidence': 'missing-old.json'})
+        self.save()
+        self.cli('check', '--base', 'HEAD')
+        self.manifest['reviews'].pop()
+        self.save()
+        self.assertEqual(before, self.cli('fingerprint', '--feature', 'one', '--base', 'HEAD'))
+        self.cli('check', '--base', 'HEAD')
+
+    def test_packet_isolates_direct_inputs_and_dependency_boundaries(self):
+        self.write('one-test.txt', 'initial')
+        self.write('private-other.txt', 'unrelated content')
+        self.manifest['features'][0]['policy_inputs'] = ['one-test.txt']
+        self.manifest['features'][1]['depends_on'] = ['one']
+        self.save()
+        self.baseline()
+        self.write('one-test.txt', 'changed')
+        self.write('private-other.txt', 'changed unrelated content')
+        packet = json.loads(self.cli('packet', '--base', 'HEAD', '--feature', 'two'))
+        self.assertEqual(packet['feature'], 'two')
+        self.assertEqual(packet['dependencies'][0]['feature'], 'one')
+        self.assertTrue(packet['dependencies'][0]['changed'])
+        self.assertNotIn('private-other.txt', json.dumps(packet))
+        self.assertEqual(packet['inputs']['app.py']['symbols'], ['second'])
+        dependency = packet['dependencies'][0]
+        self.assertEqual(dependency['policy_inputs'], ['one-test.txt'])
+        self.assertNotIn('reviews', packet)
+        self.assertNotIn('unrelated content', json.dumps(packet))
+
+    def test_packet_preserves_removed_feature_input_context_and_staged_identity(self):
+        self.write('old-data.txt', 'old')
+        self.write('new-data.txt', 'new')
+        self.manifest['features'][0]['policy_inputs'] = ['old-data.txt']
+        self.save()
+        self.baseline()
+        self.manifest['features'][0]['policy_inputs'] = ['new-data.txt']
+        self.save()
+        self.git('add', 'docs/flow-manifest.json')
+        self.write('new-data.txt', 'unstaged experiment')
+        packet = json.loads(self.cli('packet', '--base', 'HEAD', '--feature', 'one', '--staged'))
+        self.assertEqual(packet['candidate'], 'index')
+        self.assertEqual(set(packet['inputs']), {'app.py', 'docs/one.mmd', 'old-data.txt', 'new-data.txt'})
+        self.assertIsNone(packet['inputs']['old-data.txt']['candidate'])
+        self.assertEqual(packet['inputs']['new-data.txt']['candidate']['sha256'],
+                         __import__('hashlib').sha256(b'new').hexdigest())
+
+    def test_packet_initial_adoption_is_json_and_binds_local_inputs(self):
+        self.git('add', 'app.py')
+        self.git('commit', '-qm', 'before adoption')
+        self.write('test-data.txt', 'fixture')
+        self.manifest['features'][0]['policy_inputs'] = ['test-data.txt']
+        self.save()
+        self.cli('snapshot')
+        packet = json.loads(self.cli('packet', '--base', 'HEAD', '--feature', 'one'))
+        self.assertTrue(packet['scope_changed'])
+        self.assertIsNone(packet['inputs']['test-data.txt']['base'])
+        self.assertIsNotNone(packet['inputs']['test-data.txt']['candidate'])
+        self.assertEqual(packet['dependencies'], [])
+
+    def test_packet_global_policy_change_is_distinct_from_direct_feature_inputs(self):
+        self.write('global-policy.txt', 'before')
+        self.manifest['policy_inputs'] = ['global-policy.txt']
+        self.save()
+        self.baseline()
+        self.write('global-policy.txt', 'after')
+        packet = json.loads(self.cli('packet', '--base', 'HEAD', '--feature', 'one'))
+        self.assertEqual(set(packet['global_policy_changes']), {'global-policy.txt'})
+        self.assertNotIn('global-policy.txt', packet['inputs'])
+        self.assertFalse(packet['scope_changed'])
+
     def test_cosmetic_requires_md5_refresh_but_no_review(self):
         self.baseline()
         with (self.root / 'app.py').open('a') as stream:

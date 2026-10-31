@@ -1,68 +1,93 @@
-# Independent agent review
+# Independent review
 
-Use a fresh subagent with no inherited conversation when the runtime supports it. Supply the raw artifacts below; omit the author's proposed verdict and justifications. A human reviewer is the fallback when available. Repository-required human approval remains separate.
+Use a reviewer independent of the author when required by project policy. A
+fresh context receives raw artifacts and scope, not the author's desired verdict.
+A reviewer may cover related features in one repo, recording one verdict per
+feature. Repository human approvals remain separate.
 
 ## Review preparation
 
-The coordinator binds one authoritative comparison base and a stable candidate snapshot, including isolated staged/worktree content when applicable. Other bases serve navigation only. Provide versioned source paths and required ranges, including module context and dependencies. Make raw artifacts accessible for bounded reads instead of dumping a large diff or source into one tool response.
+Pin the authoritative base and candidate. Run the checker locally first; inventory,
+syntax, stale source hashes and missing mappings do not need a model to diagnose.
+Generate `packet` for affected features and supply:
 
-Divide independent work along manifest feature boundaries. Within one feature, the same reviewer reads the complete required scope in bounded pieces and checks cross-boundary contracts. Partial outputs are reading aids; the final feature verdict belongs to an independent reviewer covering that full scope. Use existing task evidence for read gaps and attempts, without a separate preparation agent or per-chunk reviewer fan-out.
+- Direct changed input paths and bounded raw diff, including removed mappings.
+- Full direct module context needed to understand those changes, the affected
+  flows and owning contracts; exact source versions and available ranges.
+- Named dependency contracts, versions and changed boundaries. Inspect additional
+  implementation where a contract is absent, contradicted or cannot establish
+  the interaction. A transitive fingerprint invalidation is not by itself a
+  requirement to reread every dependency implementation or license bundle.
+- Relevant global policy changes, actual configured test/CI commands, recorded
+  execution and tested input/environment identity. Keep full raw sources and
+  historical evidence available on demand; no whole-repository diff dump.
+
+State the finite required read set and remaining unknowns before paid review.
+Split oversized work at behavior/contract boundaries; source chunks are reading
+aids, not independent approvals. Reuse verified unchanged context and evidence.
+Read generated hashes and archival history through tool summaries rather than
+printing them into every context. Complete available required reads within the
+current attempt; clipped output names a next range, not a reason to end early.
 
 ## Dispatch template
 
 ```text
-Review flow-documentation consistency for the supplied candidate.
-Read-only: do not modify files, execute target application code, publish,
-approve a repository review, or spawn additional reviewers.
+Independently review consistency for the supplied feature(s) and exact candidate.
+Read-only repository; write only the review result in the assigned evidence path.
+Inputs: packet, required read set, bounded raw diff, source/flow/contract versions,
+relevant dependency boundaries, actual test command and execution/input evidence,
+review allowance and prior unresolved findings if this is a follow-up.
 
-Inputs:
-- Authoritative comparison base, stable candidate snapshot, scope/impact policy and feature ID.
-- The checker-generated fingerprint for that feature.
-- The manifest's exact flow path, relevant document paths and recorded layout overrides.
-- Versioned paths/ranges for raw diff and base/candidate source, module context and dependencies.
-- Base/candidate flow sources, mappings and relevant contracts.
-- Behavioral test code, exact configured test command, relevant build/CI
-  configuration, tested input identity and execution result. Mark missing
-  configuration or execution unverified rather than assuming tool defaults.
+Check branches, interactions, failure/cancellation/recovery and side effects.
+Verify hidden impact from removed mappings, new entrypoints and changed globals.
+Start with required direct context and named dependency contracts. Expand to
+additional source when the interaction is uncertain; cite the reason and ranges.
+Complete available unread/truncated required ranges before returning a verdict.
+Request genuinely missing access by named path; keep unrelated work moving.
+A hash, summary, old review or passing checker alone is not semantic proof.
 
-Verify the feature's actual branches, interactions, errors, cancellation,
-recovery and side effects against its flow. Check hidden impact from removed
-mappings, changed globals/imports and new entrypoints. Read additional relevant
-source in bounded reads when artifacts are insufficient; request missing access.
-Track unread or truncated required ranges and finish them in this attempt
-when access is available. Cite source versions and covered ranges in evidence.
-A hash or passing checker is not semantic proof. State any unchanged-flow
-reason precisely, supported by the artifacts, rather than accepting an
-assertion from the author.
-
-Return JSON only:
-{"feature":"<ID>","fingerprint":"<provided fingerprint>",
- "reviewer":"<actual agent/task identity>","verdict":"pass|fail|incomplete",
- "findings":[],"evidence":["<source/test references>"],
- "limitations":["<unverified matters>"]}
-
-Use fail for demonstrated inconsistencies, even if other evidence is missing.
-Use incomplete when required evidence is missing and no inconsistency is demonstrated.
-Name missing paths/ranges or artifacts in limitations. Use pass only when the
-entire required scope is covered and has no unresolved consistency findings.
-Required omissions cannot be recorded only as limitations alongside pass.
-Each finding names location, consequence and smallest correction.
+Return one JSON object per feature:
+{"feature":"<id>","fingerprint":"<provided>","reviewer":"<actual identity>",
+ "verdict":"pass|fail|incomplete","findings":[],"evidence":[],"limitations":[]}
+Each finding names location, consequence and smallest correction. Evidence names
+versions, covered ranges and relevant tests/input identity. Demonstrated mismatch
+is fail even if other material is missing. Required gaps with no findings are
+incomplete and name exact missing ranges. Pass requires all required feature
+scope and no unresolved inconsistency; required omissions cannot hide in limits.
 ```
 
-The coordinator preserves every raw result in task evidence. Accept a passing result only after checking its feature/fingerprint, required coverage evidence and limitations for required omissions. Store only a complete passing result at the review-evidence path in the [project-file layout](../SKILL.md#project-files-and-responsibilities) and reference that path in the manifest. Reject partial or missing coverage without rewriting the reviewer's JSON. Review outputs are excluded from their own fingerprints. Subsequent input changes invalidate the affected result.
-
-This file format is an auditable agent declaration. It neither authenticates a remote reviewer nor supplies a cryptographic signature. A CI integration must use its own trusted review/control path when reviewer authenticity is required. The checker validates record consistency and rejection conditions; it cannot determine whether an author impersonated a reviewer.
+Store only complete passing objects at
+`docs/flow-evidence/reviews/<feature>/<fingerprint>.json`, referenced by the
+manifest. Check the fingerprint again before import; retain the object unchanged.
+Keep failed/incomplete raw attempts in existing task evidence. Historical raw
+records may stay in Git/artifacts while the active manifest contains only current
+passing pointers. Review results are excluded from source/policy fingerprints.
+The checker verifies declarations, not actual reading or reviewer authenticity;
+protected review/CI must establish those where required.
 
 ## Correction and material recovery
 
-The coordinator allows an initial review and at most two finding-correction/re-review cycles per feature per user delivery request. A cycle corrects demonstrated findings, then obtains a fresh independent review. Preserve findings even when an attempt also lacks evidence; the coordinator cannot relabel them as material-only failure.
+Set a shared delivery-batch allowance before dispatch using authorized model calls,
+time or tokens available in the runtime. Preserve existing stricter project limits
+and explicit user budgets. Otherwise allow one initial independent batch review
+and at most one bounded follow-up for demonstrated findings or repaired material
+gaps. Split only for real independent boundaries, not to reset the allowance.
 
-An `incomplete` result with no demonstrated findings uses a separate material-recovery budget. Continue bounded reading with the current reviewer when possible. After an ended attempt, allow at most two recovery redispatches per feature in that delivery request. Each must supply the named missing artifacts or repair access to the named ranges. Unrelated additions and identical failed reading methods do not justify redispatch.
+Within a live attempt, continue bounded reads in the same reviewer context.
+Before an ended attempt is followed up, fix the named issue or supply the named
+missing access/ranges in a smaller packet. Finding correction and material repair
+are different causes, both visible in the shared allowance. Preserve demonstrated
+findings even when a result also lacks evidence; unrelated additions do not fix
+a read gap. Source/base/fingerprint/reviewer changes and task-owned pushes do not
+reset the request identity or spent allowance.
 
-For an unusable or stale attempt without named gaps, record and address its concrete failure cause before recovery redispatch, such as a timeout or candidate change. Pin replacement material to a stable snapshot; the same recovery limit applies.
+When the allowance is exhausted, stop automatic dispatch, preserve the failed or
+incomplete gate and finish independent safe work. Give one consolidated account
+of remaining risks, scope and cost with options for a policy/budget decision;
+repeated per-feature rerun approvals are not a default recovery strategy. Never
+replace missing review with author self-approval or a rewritten fingerprint.
 
-Every redispatch after a non-passing or unusable attempt consumes the applicable budget, including attempts invalidated by candidate changes. Demonstrated findings use the correction budget; otherwise missing, partial or stale inputs use material recovery. Address the named findings or gaps before redispatch.
-
-Neither budget resets when a fingerprint, commit, base or reviewer changes within the request. Preserve each raw result, attempt count, named gap and supplied evidence in existing task evidence. Do not overwrite the attempt history with the final passing record. Recompute the candidate fingerprint before accepting a result; changed bound inputs invalidate it rather than allowing its fingerprint to be rewritten.
-
-When a budget is exhausted or a required gap cannot be addressed, stop automatic reviewer calls for that feature. Keep its semantic gate failed or incomplete, finish unrelated safe work and report remaining findings or missing access. Never substitute self-approval or claim synchronized delivery with a missing gate.
+Record native usage for each observed attempt, including failures, in existing
+task evidence. Label missing counters and shared-session attribution unknown;
+cache/thinking subcounts are not additive to their parent totals. Telemetry gaps
+neither justify another model call nor invalidate otherwise complete review.

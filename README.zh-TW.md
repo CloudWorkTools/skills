@@ -10,7 +10,7 @@
 | [teaching-with-diagrams](skills/teaching-with-diagrams/SKILL.md) | 以有根據的說明、練習與 Mermaid 圖解教授技術概念；整合三個上游技能，並追蹤其更新。 |
 | [readme-value](skills/readme-value/SKILL.md) | 讓第一次來訪的人看懂專案用途、成果證據與下一步；價值尚未驗證時，提出具體的未來工作建議。 |
 | [client-quotation](skills/client-quotation/SKILL.md) | 製作服務報價單與對應的白話功能規劃附件，附可編輯的空白 ODT 範本。 |
-| [flow-docs-sync](skills/flow-docs-sync/SKILL.md) | 建立可定位程式的系統與功能流程圖，制定來源、流程圖及核對紀錄同步更新的硬性規則。 |
+| [flow-docs-sync](skills/flow-docs-sync/SKILL.md) | 維護可定位來源的功能流程，以精確影響範圍與可核對證據完成交付審查。 |
 
 ## 流程圖與程式同步
 
@@ -20,11 +20,11 @@
 
 預設在 PR 交付時同步：Draft／WIP 階段延後生成，Ready for review 時同步，後續候選變動重新判定，合併前驗證。沒有 PR 的專案採提交準備時點。CI 自動生成需要專案配置 AI 執行器，技能尚未內附。詳見[交付觸發規則](skills/flow-docs-sync/references/enforcement-contract.md#delivery-triggers-and-generation)。
 
-技能內附 Python Checker、可選的嚴格 staged pre-commit 檢查範本、內嵌 `AGENTS.md` 引導條文與獨立子代理審查 Prompt。檔案 MD5 負責內容完整性，符號／模組雜湊負責縮小影響範圍；支援原生 Python，以及選配 Tree-sitter 的 JS/TS/TSX、Go、Rust、Java、C#、C/C++、GDScript、SQL、Prisma、JSON 解析。其他格式可明確使用整檔控管。詳見[檢查契約與語言支援邊界](skills/flow-docs-sync/references/enforcement-contract.md)。
+技能內附 Python Checker、可選的嚴格 staged pre-commit 檢查範本、專案 `AGENTS.md` 規則與獨立審查 Prompt。檔案 MD5 負責內容完整性，符號／模組雜湊負責縮小影響範圍；支援原生 Python，以及選配 Tree-sitter 的 JS/TS/TSX、Go、Rust、Java、C#、C/C++、GDScript、SQL、Prisma、JSON 解析。其他格式可明確使用整檔控管。`explain` 一次列出受影響功能與全部審查缺口；`packet` 提供直接輸入及相依邊界，不輸出整份來源或歷史紀錄。功能自己的測試／設定輸入只影響該功能與其相依者。詳見[檢查契約與語言支援邊界](skills/flow-docs-sync/references/enforcement-contract.md)。
 
 採用時必須建立根目錄預讀規則、真實功能／來源對照與專案的 CI／合併管制；安裝技能本身只複製資源。Headless 圖形／複雜度檢查不代表視覺可讀性已確認，子代理審查紀錄也不取代專案要求的人工核准。
 
-共用規則維護於 `AGENTS.md`，需要時透過已驗證的工具專用入口匯入。可先導入核心端到端功能及其依賴；[採用指南](skills/flow-docs-sync/references/enforcement-contract.md#agent-entrypoint-discovery)涵蓋入口、多語言選擇、證據範本與完成狀態。[彩色流程圖](skills/flow-docs-sync/SKILL.md#change-filtering-and-synchronization-gate)說明 AST 如何讓純註解／排版變動免於重畫與新增語意審查，同時保留候選版本檢查。
+共用規則維護於 `AGENTS.md`，需要時透過已驗證的工具專用入口匯入。可先導入核心端到端功能及其依賴；[採用指南](skills/flow-docs-sync/references/enforcement-contract.md#agent-entrypoint-discovery)涵蓋入口、多語言選擇、證據範本與完成狀態。[影響規則](skills/flow-docs-sync/references/enforcement-contract.md#change-filtering-and-review-cost)區分局部語意變更、整檔輸入與全域政策。更新技能不會自動遷移既有專案關卡或批准失敗審查。
 
 ## 客戶報價
 

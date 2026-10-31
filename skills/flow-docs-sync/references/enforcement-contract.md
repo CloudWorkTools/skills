@@ -2,6 +2,49 @@
 
 The bundled Python-stdlib checker supplies reusable mechanical checks. It verifies neither semantic correctness nor reviewer authenticity. Project adoption also needs complete source coverage, agent discovery, appropriate review and candidate-specific CI/merge settings.
 
+## Project file layout
+
+Reuse existing authoritative requirements and contracts. Record actual paths in
+the flow index; installing this package does not migrate an adopted project's
+scope, hook, checker or approval rules.
+
+| Path | Responsibility |
+| --- | --- |
+| `AGENTS.md` | Short project reading/delivery rule and pointers |
+| `docs/flows/README.md` | Feature index, source/contract links and explicit adopted scope/gaps |
+| `docs/flows/<feature>.mmd` | Behavior branches and source navigation; `.puml` for an explicitly chosen supported PlantUML flow |
+| `docs/flow-manifest.json` | Machine inventory, mappings, dependencies, input fingerprints and current passing pointers |
+| Existing owning contract, otherwise `docs/flows/contracts.md` | One source of truth for intended boundaries, errors and invariants |
+| `docs/flow-evidence/reviews/<feature>/<fingerprint>.json` | Unchanged complete passing reviewer object |
+| `docs/flow-evidence/runtime/<feature>/<scenario>.md` | Optional additional external-behavior record; supporting artifacts beside it |
+| Existing PR/task/CI evidence | Attempts, test commands/input identities, runtime results and usage; retained outside source/policy fingerprints |
+| `tools/flow-docs/` | Complete bundled checker, parser and parser requirements |
+| Existing CI/hook integration | Actual candidate validation; strict commit hook only under an explicitly selected commit boundary |
+
+Record initial adoption once in existing durable evidence, or
+`docs/flow-evidence/adoption.md` when a standalone record is useful. Maintenance
+does not require another adoption/baseline report. Raw history can stay in Git or
+retained artifacts while the active manifest lists current passing pointers;
+removing stale pointers never approves a feature or deletes its raw history.
+
+For a new adoption, adapt this root rule to actual paths:
+
+```markdown
+## Flow documentation
+Before editing adopted behavior, read docs/flows/README.md, affected manifest
+feature/dependency records, flows and owning contracts. Report affected IDs;
+verify missing baselines from source. Validate hashes/history with the checker.
+During Draft/WIP keep pending impact. Before non-draft PR delivery synchronize
+affected documentation and obtain required independent review; check the actual
+candidate against a trusted base. Preserve existing human/merge approvals.
+Each executing agent reads its affected context again after a scope change.
+Missing required context or failed checks remain incomplete, not approved.
+```
+
+Record the delivery boundary and exact checker command beside the rule. Preserve
+stricter existing instructions until an explicit migration is authorized. Tool
+discovery does not prove document comprehension or read order.
+
 ## Manifest version 1
 
 The default path is `docs/flow-manifest.json`. Paths are repository-relative and must remain inside the repository. Register each source explicitly; source inventory is derived independently from Git and the scope patterns. `snapshot` refreshes registered hashes, without registering unknown files, creating reviews or staging changes.
@@ -46,7 +89,7 @@ A symbol body change affects its mapped features and declared dependents. Module
 
 Review fingerprints bind the base identity, scope/policy, affected feature metadata, flow contents, relevant source semantics and dependent-feature contents. Raw file-level inputs remain byte-sensitive. Review output records are excluded from their own fingerprints. Source/flow/mapping/test/checker or policy changes invalidate affected evidence; a timestamp or hash update is insufficient approval.
 
-Use `policy_inputs` for the project-owned checker, agent instructions, validation configuration and behavior tests that should invalidate reviews when changed. Preserve input versions and execution results separately. The content-level evidence may be reused only when all bound inputs match; final required checks still target the actual candidate.
+Reserve global `policy_inputs` for genuinely shared review/checker policy. Feature records may declare their own `policy_inputs` for tests, fixtures, configuration and supplementary contracts; their bytes bind that feature and its declared dependents. Paths are unique safe relative files. Manifests without this field retain legacy fingerprints. Navigation-only prose is not automatically global behavior policy. Keep actual behavior-bearing inputs bound, and review scope/policy migrations rather than moving or dropping inputs to preserve a pass. Preserve input versions and execution separately; final checks still target the actual candidate.
 
 ## Change filtering and review cost
 
@@ -63,7 +106,7 @@ The [colored workflow](../SKILL.md#change-filtering-and-synchronization-gate) di
 
 Python docstrings remain AST content. Whitespace inside literals and recognized Tree-sitter directive comments can affect behavior or tooling, so they are retained. Conversely, syntactically different but behaviorally equivalent code can still trigger review; syntax hashing does not decide runtime equivalence. Remote API changes with unchanged local inputs need separate runtime evidence.
 
-The cost reduction is fewer unrelated flow rewrites and semantic-review calls. Reviewers still need complete relevant base/candidate sources, module context, dependencies, flows and test evidence; they may request more context. `depends_on` must account for cross-feature impact. Whole-file mode cannot recover an omitted cross-file dependency; inventory it and extend mappings/dependency links or the adopted scope.
+The cost reduction is fewer unrelated flow rewrites and semantic-review calls. Reviewers need complete relevant base/candidate sources, direct module context, dependency contracts, flows and test evidence. They expand to dependency implementation when the boundary cannot be established from those contracts; transitive hashing does not make every unrelated dependency line mandatory reading. `depends_on` must account for cross-feature impact. Whole-file mode cannot recover an omitted cross-file dependency; inventory it and extend mappings/dependency links or the adopted scope.
 
 Fingerprints bind the exact comparison base and relevant content, so changed inputs invalidate affected evidence. No affected features means no new review obligation; it does not reauthenticate previous reviews. Initial adoption against an existing base without a manifest requires review of all candidate features. An invalid base fails; comparing a committed candidate with itself via `--base HEAD` creates an empty comparison and cannot establish change review. CI must select the intended base/candidate and enforce its result through required checks and protected merge settings.
 
@@ -91,7 +134,7 @@ For partial staging, isolate the intended index contents before generation. `sna
 
 A runner needs a noninteractive model command, timeout/failure handling and duplicate-run protection. Reuse valid feature evidence on retries; generated outputs must not cause an endless generation loop. Missing credentials or review leave synchronization incomplete. Use a safe patch handoff for untrusted forks; do not execute untrusted PR code with privileged workflow credentials. Verify bot-generated commits receive the required checks and reviews before claiming completion. Post-commit or post-merge generation cannot guarantee that the original delivered candidate contains synchronized documents.
 
-Apply the same [correction and material-recovery limits](reviewer-prompt.md#correction-and-material-recovery) to unattended reviewer dispatch. Record a request identity at the first ready event or explicit user delivery request. Agent/runner commits for that task, retries and base revalidation retain its identity and budgets, regardless of push credentials. Start another request only for a recorded new user task or explicit user rerun; commit authors and event actors alone do not establish that boundary. Persist identity and per-feature attempts in existing runner/task evidence before task-owned pushes so subsequent jobs can retrieve them. If that state is unavailable, stop automatic dispatch and report automation incomplete.
+Apply the same shared [review allowance](reviewer-prompt.md#correction-and-material-recovery) to unattended dispatch. Record a request identity at the first ready event or explicit user delivery request. Agent/runner commits for that task, retries and base revalidation retain its identity and budgets, regardless of push credentials. Start another request only for a recorded new user task or explicit user rerun; commit authors and event actors alone do not establish that boundary. Persist identity and per-feature attempts in existing runner/task evidence before task-owned pushes so subsequent jobs can retrieve them. If that state is unavailable, stop automatic dispatch and report automation incomplete.
 
 ## CLI and staged hook
 
@@ -111,7 +154,25 @@ python3 tools/flow-docs/flow_checker.py snapshot --root .
 python3 tools/flow-docs/flow_checker.py fingerprint --root . --base HEAD --feature job.run
 python3 tools/flow-docs/flow_checker.py check --root . --base HEAD
 python3 tools/flow-docs/flow_checker.py check --root . --base HEAD --staged
+python3 tools/flow-docs/flow_checker.py explain --root . --base <trusted-base> --staged
+python3 tools/flow-docs/flow_checker.py packet --root . --base <trusted-base> --staged --feature job.run
 ```
+
+`explain` validates the same source/mapping/diagram inputs and returns all affected
+features, fingerprints and missing/invalid review declarations in one JSON result.
+Its exit zero means the report was produced, not that reviews passed. `check`
+still fails for any required missing or invalid review.
+
+`packet` validates the candidate, then returns direct feature inputs from the
+union of base/candidate mappings, flow paths and local policy inputs. Each bound
+version has SHA-256 and line count; null means it is not bound in that version,
+not a claim that the file is absent on disk. Symbol names preserve direct module
+context navigation. Dependency entries name changed boundaries, paths and current
+fingerprints; request their own packet when more implementation context is needed.
+Only changed global policy inputs are listed, with scope/limit changes separate.
+The packet omits raw file bodies, unrelated diff and archived reviews. It is
+navigation, not a complete call graph or semantic approval; provide relevant raw
+diff and actual test/CI execution evidence alongside it.
 
 `fingerprint` prints a SHA-256 hex value. `check` exits `0` on mechanical success and `1` on validation failure, naming the missing action. Missing bases, invalid schema, unsupported inputs and unavailable tools fail visibly. A baseline with no manifest in the existing base treats candidate features as newly adopted; a nonexistent Git base is not silently accepted.
 
@@ -160,13 +221,13 @@ The default limits are 25 nodes and branch depth 8, configurable through `limits
 
 Committed thumbnails/overview images must still be regenerated with the project's toolchain. The portable checker cannot prove arbitrary derived images match a diagram. Use project-specific reproducibility checks in CI, or report derived-view validation incomplete.
 
-For interactions that benefit from `sequenceDiagram`, subgraphs or richer notation, retain the supported flowchart as the manifest's checked `flow`. Link supplementary diagrams from the feature's existing documentation and review them together. They are outside portable syntax validation. Include a supplementary source in `policy_inputs` when its changes must invalidate reviews; this is global policy and can invalidate all features. A project-specific validator needs its own tested integration; the bundled checker has no plug-in diagram-parser interface.
+For interactions that benefit from `sequenceDiagram`, subgraphs or richer notation, retain the supported flowchart as the manifest's checked `flow`. Link supplementary diagrams from the feature's existing documentation and review them together. They are outside portable syntax validation. Include a supplementary source in the owning feature’s `policy_inputs` when its changes must invalidate that feature; use global policy only when all features really depend on it. A project-specific validator needs its own tested integration; the bundled checker has no plug-in diagram-parser interface.
 
 ## Agent review records
 
 Dispatch [the independent reviewer prompt](reviewer-prompt.md) automatically when a fresh-subagent facility is available. Provide raw source/dependencies in addition to diff and flows; those alone may omit critical context. Retain required human approvals where repository policy specifies them.
 
-Save the reviewer response at the review-evidence path specified in the [project-file layout](../SKILL.md#project-files-and-responsibilities). Each manifest review entry contains `feature`, `fingerprint`, `reviewer`, `verdict: "pass"` and `evidence` pointing to that exact file. The file must identify the same feature, fingerprint, reviewer and passing verdict, with an empty `findings` list. A failed/incomplete response or stale fingerprint is rejected.
+Save the reviewer response at the review-evidence path specified in the [project-file layout](#project-file-layout). Each manifest review entry contains `feature`, `fingerprint`, `reviewer`, `verdict: "pass"` and `evidence` pointing to that exact file. The file must identify the same feature, fingerprint, reviewer and passing verdict, with an empty `findings` list. A failed/incomplete response or stale fingerprint is rejected.
 
 Follow [review preparation](reviewer-prompt.md#review-preparation) for versioned material and full-feature responsibility. Partial passes cannot establish a feature review. Required unread/truncated material leaves review incomplete; raw attempts and recovery counts belong in existing task evidence. The checker validates declarations, not actual read coverage or retry counts.
 
@@ -193,7 +254,7 @@ Use `/memory` or `/context` to inspect loaded files on supporting versions; dire
 
 ## Adoption inventory and staged rollout
 
-Use the [project-file layout](../SKILL.md#project-files-and-responsibilities): the flow index records actual document paths/owners and links existing authoritative material. Requirements and contracts own expected behavior, architecture documents own responsibilities, and feature flows own branches/interactions and source navigation. Source inspection supplies evidence of implemented behavior. Resolve a conflict with the relevant owner; do not automatically rewrite an intended contract to match a defect or copy competing authoritative descriptions.
+Use the [project-file layout](#project-file-layout): the flow index records actual document paths/owners and links existing authoritative material. Requirements and contracts own expected behavior, architecture documents own responsibilities, and feature flows own branches/interactions and source navigation. Source inspection supplies evidence of implemented behavior. Resolve a conflict with the relevant owner; do not automatically rewrite an intended contract to match a defect or copy competing authoritative descriptions.
 
 Inventory a core end-to-end feature with the following dependency checklist before narrowing the initial scope:
 
@@ -219,7 +280,9 @@ For example, first adopt `download.run` together with its `network.fetch` depend
 
 ## Runtime evidence template
 
-Save this Markdown record at the per-feature runtime scenario path in the [project-file layout](../SKILL.md#project-files-and-responsibilities) and provide that exact path to the reviewer. Preserve supporting artifacts in the adjacent scenario directory. It is separate from the required reviewer JSON and does not create approval. Fill it from an executed scenario; otherwise mark the scenario unverified.
+Use existing CI/runtime evidence when it records the required inputs, command, result and cleanup. Create a separate scenario record only for required external behavior not already evidenced. Otherwise mark it unverified instead of inventing an execution.
+
+When a separate record is needed, save this Markdown record at the per-feature runtime scenario path in the [project-file layout](#project-file-layout) and provide that exact path to the reviewer. Preserve supporting artifacts in the adjacent scenario directory. It is separate from the required reviewer JSON and does not create approval. Fill it from an executed scenario; otherwise mark the scenario unverified.
 
 ```markdown
 ### Runtime evidence: <feature / scenario>
@@ -242,7 +305,7 @@ Classify failures from evidence: a stale description, insufficient verification,
 
 ## Completion report
 
-Write the adoption report at the path specified in the [project-file layout](../SKILL.md#project-files-and-responsibilities). Begin with an artifact table containing exact path, purpose, created/reused/missing/not-applicable status and verification evidence for every required/conditional artifact. Explain any explicitly required path overrides. Then use separate gate statuses such as `passed`, `failed`, `incomplete`, `not run` or `unverified`, with evidence for the exact scope and candidate. The following is a report template, not a list of completed checks:
+Record adoption once in durable evidence using the [project layout](#project-file-layout). During maintenance link existing PR/task/CI evidence instead of creating another report. Begin with an artifact table containing exact path, purpose, created/reused/missing/not-applicable status and verification evidence for every required/conditional artifact. Explain any explicitly required path overrides. Then use separate gate statuses such as `passed`, `failed`, `incomplete`, `not run` or `unverified`, with evidence for the exact scope and candidate. The following is a report template, not a list of completed checks:
 
 | Gate | Required report content |
 | --- | --- |
@@ -276,9 +339,9 @@ The following capabilities are not bundled. The current adoption workflow remain
 
 ## Required adoption and acceptance
 
-The inline bootstrap in `SKILL.md` is authoritative for pre-edit reading and is available without loading this reference. Adopt it only with real overview/manifest/flow paths. Preserve local-only root instructions; use a tracked policy plus a documented bootstrap for other workspaces. Check the actual agent entrypoints and nested instruction scopes instead of assuming all tools discover `AGENTS.md`.
+For new adoption use the [root rule](#project-file-layout) with real overview/manifest/flow paths. Existing project rules remain authoritative until explicitly migrated. Preserve local-only root instructions; use a tracked policy plus a documented bootstrap for other workspaces. Check the actual agent entrypoints and nested instruction scopes instead of assuming all tools discover `AGENTS.md`.
 
-Verify the [project-file layout](../SKILL.md#project-files-and-responsibilities) against actual files and content. The root README is navigation only. An adoption that only edits that README or omits the rule, overview, feature flows, manifest or adoption report is incomplete. Verify every applicable review/runtime/tooling artifact at its recorded path; retain existing human-facing documents at their owning locations.
+Verify the [project-file layout](#project-file-layout) against actual files and content. The root README is navigation only. An adoption that only edits that README or omits the rule, overview, feature flows, manifest or initial adoption evidence is incomplete. Verify every applicable review/runtime/tooling artifact at its recorded path; retain existing human-facing documents at their owning locations.
 
 Run mechanical cases through the real checker in isolated Git repositories. Verify these cases:
 

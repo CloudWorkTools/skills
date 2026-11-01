@@ -3,6 +3,7 @@ import json
 import os
 import pathlib
 import runpy
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -63,6 +64,97 @@ class CheckerTests(unittest.TestCase):
         self.manifest['reviews'] = [r for r in self.manifest['reviews'] if r['feature'] != feature]
         self.manifest['reviews'].append({**record, 'evidence': evidence})
         self.save()
+
+    def test_pinned_base_stays_equal_to_pr_base_after_local_commits(self):
+        self.baseline()
+        base = self.git('rev-parse', 'HEAD').decode().strip()
+        self.git('update-ref', 'refs/remotes/origin/main', base)
+        self.git('checkout', '-qb', 'feature')
+        self.cli('pin-base', '--base', base, '--default-branch', 'main')
+        self.write('notes.md', 'another local commit\n')
+        self.git('add', '.')
+        self.git('commit', '-qm', 'notes')
+        self.assertEqual(self.cli('fingerprint', '--feature', 'one', '--pinned-base'),
+                         self.cli('fingerprint', '--feature', 'one', '--base', base))
+        self.assertEqual(json.loads(self.cli('explain', '--pinned-base'))['resolved_base'], base)
+        self.cli('check', '--pinned-base', '--staged')
+
+    def test_pinned_base_missing_or_for_another_branch_refuses(self):
+        self.baseline()
+        self.assertIn('no pinned base', self.cli('check', '--pinned-base', ok=False))
+        self.git('update-ref', 'refs/remotes/origin/main', 'HEAD')
+        self.cli('pin-base', '--base', 'HEAD', '--default-branch', 'main')
+        self.git('checkout', '-qb', 'other')
+        self.assertIn('another branch', self.cli('check', '--pinned-base', ok=False))
+
+    def test_pin_refuses_feature_commit_outside_default_history(self):
+        self.baseline()
+        self.git('update-ref', 'refs/remotes/origin/main', 'HEAD')
+        self.write('notes.md', 'feature\n')
+        self.git('add', '.')
+        self.git('commit', '-qm', 'feature')
+        self.cli('pin-base', '--base', 'HEAD', '--default-branch', 'main', ok=False)
+
+    def test_linked_worktrees_have_separate_branch_bound_receipts(self):
+        self.baseline()
+        self.git('update-ref', 'refs/remotes/origin/main', 'HEAD')
+        self.cli('pin-base', '--base', 'HEAD', '--default-branch', 'main')
+        original = self.root
+        linked = original.parent / (original.name + '-linked')
+        self.addCleanup(shutil.rmtree, linked, True)
+        self.git('worktree', 'add', '-qb', 'linked', str(linked), 'HEAD')
+        try:
+            self.root = linked
+            self.assertIn('no pinned base', self.cli('check', '--pinned-base', ok=False))
+            self.cli('pin-base', '--base', 'HEAD', '--default-branch', 'main')
+            self.cli('check', '--pinned-base')
+        finally:
+            self.root = original
+        self.cli('check', '--pinned-base')
+
+    def test_pinned_receipt_on_platform_without_posix_uid_api(self):
+        self.baseline()
+        base = self.git('rev-parse', 'HEAD').decode().strip()
+        self.git('update-ref', 'refs/remotes/origin/main', base)
+        self.cli('pin-base', '--base', base, '--default-branch', 'main')
+        receipt = self.root / '.git/flow-docs-base.json'
+        receipt.chmod(0o666)  # Windows stat modes do not represent NTFS ACLs.
+        module = runpy.run_path(str(CHECKER))
+        tree = module['Tree'](self.root)
+        with mock.patch.object(os, 'geteuid', None):
+            self.assertEqual(module['pinned_base'](tree), base)
+
+    def test_pin_receipt_rejects_links_and_writable_records(self):
+        self.baseline()
+        self.git('update-ref', 'refs/remotes/origin/main', 'HEAD')
+        self.cli('pin-base', '--base', 'HEAD', '--default-branch', 'main')
+        receipt = pathlib.Path(self.git('rev-parse', '--git-path', 'flow-docs-base.json').decode().strip())
+        if not receipt.is_absolute():
+            receipt = self.root / receipt
+        receipt.chmod(0o666)
+        self.assertIn('unsafe pinned', self.cli('check', '--pinned-base', ok=False))
+        receipt.unlink()
+        target = self.root / 'outside.json'
+        target.write_text('{}')
+        receipt.symlink_to(target)
+        self.assertIn('symlink', self.cli('check', '--pinned-base', ok=False))
+        self.assertIn('symlink', self.cli('pin-base', '--base', 'HEAD',
+                                         '--default-branch', 'main', ok=False))
+        self.assertEqual(target.read_text(), '{}')
+
+    def test_first_push_zero_base_uses_validated_default_branch(self):
+        self.baseline()
+        base = self.git('rev-parse', 'HEAD').decode().strip()
+        remote = self.root.parent / (self.root.name + '-remote.git')
+        self.addCleanup(shutil.rmtree, remote, True)
+        subprocess.check_call(['git', 'clone', '--bare', str(self.root), str(remote)],
+                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        self.git('remote', 'add', 'origin', str(remote))
+        branch = self.git('branch', '--show-current').decode().strip()
+        result = self.cli('explain', '--base', '0' * 40, '--default-branch', branch)
+        self.assertEqual(json.loads(result)['resolved_base'], base)
+        self.cli('check', '--base', '0' * 40, ok=False)
+        self.cli('check', '--base', '0' * 40, '--default-branch', 'bad..ref', ok=False)
 
     def test_valid_and_feature_local_review(self):
         self.baseline()
@@ -448,6 +540,8 @@ class CheckerTests(unittest.TestCase):
         self.save()
         self.baseline()
         self.write('tools/flow-docs/flow_checker.py', CHECKER.read_text())
+        self.git('update-ref', 'refs/remotes/origin/main', 'HEAD')
+        self.cli('pin-base', '--base', 'HEAD', '--default-branch', 'main')
         hook = CHECKER.parent.parent / 'assets/pre-commit'
         self.write('.git/hooks/pre-commit', hook.read_text())
         (self.root / '.git/hooks/pre-commit').chmod(0o755)

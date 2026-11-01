@@ -151,9 +151,10 @@ Arguments follow the subcommand:
 
 ```bash
 python3 tools/flow-docs/flow_checker.py snapshot --root .
-python3 tools/flow-docs/flow_checker.py fingerprint --root . --base HEAD --feature job.run
-python3 tools/flow-docs/flow_checker.py check --root . --base HEAD
-python3 tools/flow-docs/flow_checker.py check --root . --base HEAD --staged
+python3 tools/flow-docs/flow_checker.py pin-base --root . --base <fetched-PR-base-SHA> --default-branch main
+python3 tools/flow-docs/flow_checker.py fingerprint --root . --pinned-base --feature job.run
+python3 tools/flow-docs/flow_checker.py check --root . --pinned-base
+python3 tools/flow-docs/flow_checker.py check --root . --pinned-base --staged
 python3 tools/flow-docs/flow_checker.py explain --root . --base <trusted-base> --staged
 python3 tools/flow-docs/flow_checker.py packet --root . --base <trusted-base> --staged --feature job.run
 ```
@@ -179,6 +180,21 @@ diff and actual test/CI execution evidence alongside it.
 Worktree and staged validation are different snapshots. `--staged` reads the Git index, so unstaged fixes cannot make a bad commit pass. `snapshot --staged` is rejected; snapshot updates the worktree only, and the operator must stage intended results. Do not mix worktree review fingerprints with staged checks.
 
 For an explicit strict per-commit policy, the [pre-commit template](../assets/pre-commit) expects a project-owned checker at `tools/flow-docs/flow_checker.py`. Copy the complete scripts directory there and adapt the hook to the project's existing hook manager or `core.hooksPath`. Set `FLOW_DOCS_PYTHON` to the parser environment's interpreter when using optional AST dependencies; otherwise the hook uses `python3`. Preserve existing hooks; do not overwrite them or change global Git configuration. A local pre-commit hook can be bypassed, so CI must run the same checker against the actual candidate with a trusted base. Keep protected review for checker, workflow and scope-policy changes.
+
+The strict hook uses `--pinned-base`. Before its first commit, pin the actual PR
+comparison SHA after fetching the default branch. The private Git-worktree receipt
+binds that full SHA to the current branch and verifies ancestry in both the
+candidate and the fetched default-branch history. Missing, unsafe or other-branch
+receipts fail closed. Refresh the pin explicitly if the actual PR base changes;
+CI continues to supply its trusted event base independently. This aligns local
+and PR fingerprints without weakening the review gate or changing explicit
+`--base` callers. All-zero first-push bases require `--default-branch`; the checker
+fetches that validated origin ref and uses its merge-base with HEAD.
+
+Receipt owner/mode checks apply on POSIX. Platforms without the POSIX UID API,
+including native Windows Python, retain regular-file, symlink, branch and ancestry
+checks; portable stat bits do not establish NTFS ACL security. CI's independently
+supplied trusted base remains required on every platform.
 
 ## Tested language adapters
 

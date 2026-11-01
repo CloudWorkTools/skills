@@ -4,4 +4,4 @@
 set -eu
 root=$(git rev-parse --show-toplevel)
 exec "${FLOW_DOCS_PYTHON:-python3}" "$root/tools/flow-docs/flow_checker.py" check \
-  --root "$root" --manifest docs/flow-manifest.json --base HEAD --staged
+  --root "$root" --manifest docs/flow-manifest.json --pinned-base --staged

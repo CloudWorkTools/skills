@@ -10,7 +10,7 @@ Reusable agent skills for previews, technical teaching, project documentation an
 | [teaching-with-diagrams](skills/teaching-with-diagrams/SKILL.md) | Teach technical concepts through grounded explanations, practice and Mermaid diagrams. Combines reviewed practices from three upstream skills with update tracking. |
 | [readme-value](skills/readme-value/SKILL.md) | Help first-time visitors understand a project's use, evidence and next step, with concrete proposals when its value is still unproven. |
 | [client-quotation](skills/client-quotation/SKILL.md) | Prepare a service quotation and matching plain-language scope attachment; includes blank editable ODT templates. |
-| [flow-docs-sync](skills/flow-docs-sync/SKILL.md) | Create navigable system/feature flows and establish mandatory source, diagram and review synchronization controls. |
+| [flow-docs-sync](skills/flow-docs-sync/SKILL.md) | Maintain source-linked feature flows with scoped impact checks and verifiable delivery reviews. |
 
 ## Flow documentation synchronization
 
@@ -20,11 +20,11 @@ Install with `npx --yes skills@1.5.24 add CloudWorkTools/skills --skill flow-doc
 
 The default synchronization boundary is PR delivery: defer generation during Draft/WIP work, synchronize when ready for review, and revalidate subsequent candidates before merge. Projects without PRs use commit preparation. Automatic CI generation requires a project-specific AI runner; none is bundled. See [delivery triggers](skills/flow-docs-sync/references/enforcement-contract.md#delivery-triggers-and-generation).
 
-The skill bundles a Python checker, optional strict staged pre-commit template, inline `AGENTS.md` bootstrap and fresh-subagent review prompt. It combines file MD5 integrity with symbol/context hashes: native Python or optional Tree-sitter adapters for JS/TS/TSX, Go, Rust, Java, C#, C/C++, GDScript, SQL, Prisma and JSON. Other formats use explicit file-level coverage. See the [checker contract and language boundaries](skills/flow-docs-sync/references/enforcement-contract.md).
+The skill bundles a Python checker, optional strict staged pre-commit template, project `AGENTS.md` rule and independent review prompt. `explain` reports all affected features and review gaps; `packet` emits bounded direct-input and dependency references without dumping raw files or archival reviews. Feature-local test/config inputs invalidate their owner and dependents rather than unrelated features. It combines file MD5 integrity with symbol/context hashes: native Python or optional Tree-sitter adapters for JS/TS/TSX, Go, Rust, Java, C#, C/C++, GDScript, SQL, Prisma and JSON. Other formats use explicit file-level coverage. See the [checker contract and language boundaries](skills/flow-docs-sync/references/enforcement-contract.md).
 
 Adoption requires the root reading rule, real feature/source mappings and project-specific CI/merge controls. Installing the skill only copies resources. Headless graph/complexity checks do not prove visual readability; an agent review record does not replace repository-required human approval.
 
-Shared rules live in `AGENTS.md`, with verified agent-specific imports when needed. Start with a core end-to-end feature and its dependencies; the [adoption guide](skills/flow-docs-sync/references/enforcement-contract.md#agent-entrypoint-discovery) covers entrypoints, mixed-language choices, evidence templates and completion reporting. The [colored workflow](skills/flow-docs-sync/SKILL.md#change-filtering-and-synchronization-gate) explains how AST filtering avoids cosmetic-only redraw/review obligations while retaining candidate checks.
+Shared rules live in `AGENTS.md`, with verified agent-specific imports when needed. Start with a core end-to-end feature and its dependencies; the [adoption guide](skills/flow-docs-sync/references/enforcement-contract.md#agent-entrypoint-discovery) covers entrypoints, mixed-language choices, evidence templates and completion reporting. The [impact rules](skills/flow-docs-sync/references/enforcement-contract.md#change-filtering-and-review-cost) distinguish local semantic changes, byte-sensitive inputs and shared policy. Existing project gates remain authoritative until an explicit migration; installing a new skill does not approve old failed reviews.
 
 ## Client quotations
 

@@ -1,5 +1,13 @@
 # Skill delivery checks
 
+For bounded orchestration output and a typed current checkpoint, run
+`python3 scripts/agent-ops.py --help`. Its module docstring defines the snapshot
+schema. `wait` accepts either a coordinator `--run` or worker `--terminal` and
+performs one bounded read-only wait; the caller handles the complete mailbox
+before acknowledging. Source identity is caller-asserted and summaries are
+metadata projections, not a general secret scanner. Preserve raw evidence
+privately when omitted details are needed.
+
 Run `npm test` before delivering repository changes. The command owns installation, upstream tracking and Python checker tests. `.github/workflows/tests.yml` runs it for PRs, main pushes and merge-group candidates with pinned optional parsers and two Python versions. Required-check settings are remote configuration; inspect them before claiming merge enforcement.
 
 The installation tests compare packaged resources and validate relative Markdown links in the installed skills. A repository-only document cannot satisfy an installed resource link. Supported Markdown syntax and limitations live beside the link checker.

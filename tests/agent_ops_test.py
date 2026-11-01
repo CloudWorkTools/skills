@@ -168,6 +168,14 @@ class AgentOpsTests(unittest.TestCase):
         self.assertIn('fail', json.dumps(result))
         self.assertIn('published-but-verification-pending', json.dumps(result))
 
+    def test_cli_wire_output_respects_the_exact_byte_bound(self):
+        value = {('x' * 145) + str(i): {'status': 'v' * 128} for i in range(60)}
+        result = subprocess.run([sys.executable, str(SCRIPT), 'summary'],
+            input=json.dumps(value), text=True, capture_output=True)
+        self.assertEqual(result.returncode, 0)
+        self.assertLessEqual(len(result.stdout.encode()), 8192)
+        self.assertGreater(json.loads(result.stdout)['omitted_fields'], 0)
+
     def test_coordinator_wait_selects_run_without_terminal_or_ack(self):
         module = self.load()
         calls = []

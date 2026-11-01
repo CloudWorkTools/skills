@@ -250,7 +250,7 @@ def main():
         if args.command == 'current':
             expected = {key: getattr(args, key) for key in ('repository', 'revision', 'version')}
             raw = current(args.path, value, expected, args.expected_digest)
-        print(json.dumps(summary(value, raw, args.raw), sort_keys=True))
+        sys.stdout.buffer.write(encode(summary(value, raw, args.raw)))
         return 1 if args.command == 'wait' and value.get('command_exit_code', 0) else 0
     except (ValueError, TypeError, OSError, RecursionError, subprocess.SubprocessError):
         print('{"error":"invalid_input","status":"unknown"}')

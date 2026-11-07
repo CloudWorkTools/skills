@@ -6,11 +6,16 @@
 
 | 技能 | 用途 |
 | --- | --- |
+| [siteping-install](skills/siteping-install/SKILL.md) | 導入 SitePing 網頁回饋，包含持久儲存、存取權限與部署驗證。 |
 | [pr-preview](skills/pr-preview/SKILL.md) | 透過專案正式建置路徑，建立或操作按需啟動的 PR／worktree 預覽。 |
 | [teaching-with-diagrams](skills/teaching-with-diagrams/SKILL.md) | 以有根據的說明、練習與 Mermaid 圖解教授技術概念；整合三個上游技能，並追蹤其更新。 |
 | [readme-value](skills/readme-value/SKILL.md) | 讓第一次來訪的人看懂專案用途、成果證據與下一步；價值尚未驗證時，提出具體的未來工作建議。 |
 | [client-quotation](skills/client-quotation/SKILL.md) | 製作服務報價單與對應的白話功能規劃附件，附可編輯的空白 ODT 範本。 |
 | [flow-docs-sync](skills/flow-docs-sync/SKILL.md) | 維護可定位來源的功能流程，以精確影響範圍與可核對證據完成交付審查。 |
+
+## 安裝 SitePing
+
+以 `npx --yes skills@1.5.24 add CloudWorkTools/skills --skill siteping-install --agent codex --yes` 安裝 skill，再請 agent：「用 $siteping-install 為這個專案安裝 SitePing，接好持久儲存，並驗證後端重啟後仍能開啟回饋。」此 skill 指導 agent 實際修改專案；GitHub 串接與發布審核依需求選配。
 
 ## 流程圖與程式同步
 

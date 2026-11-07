@@ -6,11 +6,16 @@ Reusable agent skills for previews, technical teaching, project documentation an
 
 | Skill | Purpose |
 | --- | --- |
+| [siteping-install](skills/siteping-install/SKILL.md) | Integrate SitePing feedback with persistent storage, access controls and verified deployment. |
 | [pr-preview](skills/pr-preview/SKILL.md) | Create or operate an on-demand PR/worktree preview using a project's production build path. |
 | [teaching-with-diagrams](skills/teaching-with-diagrams/SKILL.md) | Teach technical concepts through grounded explanations, practice and Mermaid diagrams. Combines reviewed practices from three upstream skills with update tracking. |
 | [readme-value](skills/readme-value/SKILL.md) | Help first-time visitors understand a project's use, evidence and next step, with concrete proposals when its value is still unproven. |
 | [client-quotation](skills/client-quotation/SKILL.md) | Prepare a service quotation and matching plain-language scope attachment; includes blank editable ODT templates. |
 | [flow-docs-sync](skills/flow-docs-sync/SKILL.md) | Maintain source-linked feature flows with scoped impact checks and verifiable delivery reviews. |
+
+## SitePing installation
+
+Install the skill with `npx --yes skills@1.5.24 add CloudWorkTools/skills --skill siteping-install --agent codex --yes`, then ask: “Use $siteping-install to install SitePing in this project, connect persistent storage and verify that feedback survives a backend restart.” The skill directs project changes; GitHub delivery and publication review are optional.
 
 ## Flow documentation synchronization
 

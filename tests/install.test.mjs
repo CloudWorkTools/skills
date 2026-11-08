@@ -4,7 +4,7 @@ import { mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync } from 'node:
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import test from 'node:test';
+import test, { after, before } from 'node:test';
 import { markdownLinkErrors } from './helpers/markdown-links.mjs';
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -13,7 +13,24 @@ function npm(args, cwd) {
   return execFileSync('npm', args, { cwd, env, encoding: 'utf8', timeout: 180_000 });
 }
 
-for (const skill of ['pr-preview', 'teaching-with-diagrams', 'readme-value', 'flow-docs-sync', 'siteping-install']) {
+const skills = ['pr-preview', 'teaching-with-diagrams', 'readme-value', 'flow-docs-sync', 'siteping-install', 'client-quotation'];
+assert.deepEqual(
+  readdirSync(join(root, 'skills'), { withFileTypes: true }).filter(entry => entry.isDirectory()).map(entry => entry.name).sort(),
+  [...skills].sort(),
+);
+
+let packDir;
+let tarball;
+before(() => {
+  packDir = mkdtempSync(join(tmpdir(), 'cloudworktools-pack-'));
+  const packed = JSON.parse(npm(['pack', '--json', '--pack-destination', packDir], root));
+  tarball = join(packDir, packed[0].filename);
+});
+after(() => {
+  if (packDir) rmSync(packDir, { recursive: true, force: true });
+});
+
+for (const skill of skills) {
 test(`npm package installs a complete, discoverable ${skill} skill`, () => {
   const source = join(root, 'skills', skill);
   assert.ok(readFileSync(join(source, 'SKILL.md'), 'utf8').startsWith(`---\nname: ${skill}\n`));
@@ -21,9 +38,8 @@ test(`npm package installs a complete, discoverable ${skill} skill`, () => {
   try {
     const project = join(sandbox, 'project');
     mkdirSync(project);
-    const packed = JSON.parse(npm(['pack', '--json', '--pack-destination', sandbox], root));
     npm(['install', '--ignore-scripts', '--no-audit', '--no-fund', '--no-package-lock',
-      join(sandbox, packed[0].filename)], project);
+      tarball], project);
     const dependency = join(project, 'node_modules/@cloudworktools/skills');
     npm(['exec', '--yes', '--package=skills@1.5.24', '--', 'skills', 'add', dependency,
       '--skill', skill, '--agent', 'codex', '--copy', '--yes'], project);

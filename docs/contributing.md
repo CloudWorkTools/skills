@@ -14,7 +14,7 @@ The installation tests compare packaged resources and validate relative Markdown
 
 ## Behavior review
 
-When changing flow-docs-sync instructions, give a fresh reviewer the raw cases from [the delivery scenarios](../tests/scenarios/flow-docs-sync.md). Keep the rubric out of the initial scenario prompt. The reviewer owns cross-file consistency and whether agent decisions match the intended delivery boundary; deterministic tests own file/path/anchor rules.
+When changing flow-docs-sync instructions, give a fresh reviewer the raw cases from [the delivery scenarios](../tests/scenarios/flow-docs-sync.md). When changing pr-preview instructions, do the same with [the preview scenarios](../tests/scenarios/pr-preview.md). Keep the rubric out of the initial scenario prompt. The reviewer owns cross-file consistency and whether agent decisions match the intended delivery boundary; deterministic tests own file/path/anchor rules.
 
 Attach actual test commands from project configuration, relevant CI configuration and recorded execution evidence to the review packet. Withholding expected case decisions does not require withholding these inputs; do not make reviewers guess discovery defaults.
 

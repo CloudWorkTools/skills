@@ -13,7 +13,13 @@ Read this when adding, adapting, or fixing a project's preview script. The servi
 | `down <selector>` | Saved state only | Delete only that preview's disposable resources |
 | `list` | State and Docker labels | Show source/version, URL, and observed status |
 
+`list` is read-only reconciliation: read both state and Docker labels, show creation time and last `up` time, and mark any disagreement as `mismatch` without repairing or deleting anything.
+
 Keep a stable slot across updates; record the changing SHA in state. Include repository identity in PR slots when multiple repositories share a daemon. Use a full canonical-path hash for local slots: `/alice/app` and `/bob/app` must differ. A short basename alone is not an identity. Let Docker allocate a loopback port, or check candidates and handle bind failure; a hash into a small port range cannot guarantee uniqueness. Save the assigned port.
+
+Prefer relative URLs or runtime configuration so the preview runs the same build artifact as production. If the framework must bake a URL or port into the bundle at build time (for example `NEXT_PUBLIC_*` or `VITE_*`), use the slot's saved stable port, stop safely when the first bind fails instead of silently switching ports, and disclose the build-time override as an untested parity difference.
+
+For a new script, label every preview resource, for example `pr-preview.slot=<slot>`, `pr-preview.repo=<owner/name>`, `pr-preview.source-sha=<sha>`, and `pr-preview.role=volume|network`. When an existing script already applies consistent labels, keep its scheme.
 
 ## Source integrity
 
@@ -36,7 +42,7 @@ Use the selected source's established Dockerfile, asset build, startup command, 
 
 Operate from a trusted controller checkout. One conservative policy is to compare the target production Compose file to the trusted version and reject differences, then use the trusted file with the selected build context. Infrastructure PRs need separate review and an isolated host; do not silently ignore their changes while claiming full parity.
 
-An override preserves unspecified base configuration. Review all services, published ports, host mounts, external volumes/networks, privileged settings, and build entitlements. Isolate every required service, including workers. Compose project names do not override explicit `container_name`, external resources, or explicit volume/network names.
+An override preserves unspecified base configuration. Review all services, published ports, host mounts, external volumes/networks, privileged settings, and build entitlements. Other high-risk attributes include, non-exhaustively, `include`/`extends`, `pid: host`/`ipc: host`, `cap_add`, `devices`, `build.secrets`/`build.ssh`/`build.additional_contexts`, and `env_file` outside the build context. The safe default remains the trusted controller Compose with the PR as build context only. Isolate every required service, including workers. Compose project names do not override explicit `container_name`, external resources, or explicit volume/network names.
 
 For Compose versions supporting `!override`, replace the full web port list rather than appending to the production mapping. Resolve build context to the selected absolute source path, not the saved-state directory. Verify the effective configuration with `docker compose ... config` before starting it. Avoid logging its secrets.
 
@@ -44,7 +50,7 @@ Use generated preview-only credentials, explicit environment handling (for examp
 
 ## Durable state and lifecycle
 
-Store state in a private controller-owned location outside the source tree. Persist:
+Store state in a private controller-owned location outside the source tree, for example `${XDG_STATE_HOME:-~/.local/state}/pr-preview/<slot>`. Persist:
 
 - Selector, canonical source, repository identity, full SHA and dirty status.
 - Docker context/daemon identity, project name, resource identities, and allocated URL.
@@ -55,15 +61,19 @@ Keep directories/files private (for example modes 700/600). Use an atomic state 
 
 Serialize `up` and `down` per slot; acquire the lock before reading mutable state or changing the checkout. Keep lock files outside state directories deleted by `down`. Following logs must not retain the mutation lock. For an explicit `up`, remove a stopped legacy preview before fresh creation only after proving the exact expected container set, consistent project labels, and matching preview-only volumes/networks. A running, incomplete, mismatched, or unverifiable set remains a refusal; never adopt its credentials or data. Verify the saved Docker target before logs or deletion: matching names on another daemon are not proof of ownership.
 
+When `up` moves a slot to a new PR head, compare migrations between the previous and new SHA. If migrations changed or were removed in a way that may conflict with the existing DB volume, tell the user an explicit reset is available; never reset implicitly.
+
 ## Optional repository seed provider
 
 The preview tool owns isolation; the repository owns domain data. Do not create a generic dummy-data generator or put a repository's fixtures in this skill. A repository that needs review data may register fixed argument arrays for profiles such as `review` or `e2e`, for example `python manage.py seed_preview_data --profile review`. Store that registration with the trusted controller configuration, not in PR-controlled Compose files, and never execute a configuration string through a shell.
 
-Implement `seed <selector> [profile]` only after `up` has saved and verified the preview state. Invoke the selected fixed command through that saved Compose project (usually `compose exec` in the app service), then record profile, seed version, source SHA, timestamp, and result. Seed commands must be deterministic, idempotent, local to the preview database, and free of production data or credentials. If the repository has no provider, keep `up` available and report that the preview has empty data. An explicit reset may remove only the selected preview's disposable data volume before a fresh `up` and seed; it must never be implicit.
+Implement `seed <selector> [profile]` only after `up` has saved and verified the preview state. Invoke the selected fixed command through that saved Compose project (usually non-interactive `docker compose ... exec -T` in the app service), then record profile, seed version, source SHA, timestamp, and result. Seed commands must be deterministic, idempotent, local to the preview database, and free of production data or credentials. If the repository has no provider, keep `up` available and report that the preview has empty data. An explicit reset may remove only the selected preview's disposable data volume before a fresh `up` and seed; it must never be implicit.
 
-`down` uses the saved configuration, not the current PR files. An explicitly disposable preview may use project-scoped `down --volumes --remove-orphans` after checking ownership and excluding shared/external resources. Do not use global prune commands. Keep user source changes. Document any retained worktrees, caches, and state-root requirements.
+`down` uses the saved configuration, not the current PR files. An explicitly disposable preview may use project-scoped `down --volumes --remove-orphans` after checking ownership and excluding shared/external resources. Do not use global prune commands. Also delete the preview-only image IDs recorded in that slot's state, both the last successful image and any image from a failed update; do not use `--rmi all`, which can target images shared with other workloads. Keep user source changes. `down` removes the slot's containers, networks, volumes, recorded images, managed PR worktree, and slot state; document any shared build cache or lock files that remain outside per-slot teardown.
 
 ## Verification and regression cases
+
+A newly created script must pass all 16 scenarios below. A local fix to an existing script verifies the affected scenarios plus one real-container smoke test.
 
 Use a finite readiness deadline and bounded HTTP requests. Require the actual required services to be healthy, not just running. Ensure the responding port belongs to this preview. Propagate build, migration, and readiness failures; do not print success after the retry loop unconditionally. HTTP 200 alone does not prove authentication, correct assets, or migration success.
 

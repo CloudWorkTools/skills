@@ -44,7 +44,7 @@ pstack 是多技能 plugin；[Cursor manifest][cursor-manifest] 同時註冊 `sk
 
 ## 推論：現有能力與成本比較
 
-flow-docs-sync 的明載契約已包含相關 flow/manifest 先讀、scope 變更後重讀、syntax/context 影響範圍、顯式 `depends_on`、綁 base/flow/policy 的 fingerprints，以及獨立 review 的 stale rejection。[本地 Maintain 與 filtering](../../skills/flow-docs-sync/SKILL.md#maintain-workflow)、[本地 review records](../../skills/flow-docs-sync/references/enforcement-contract.md#agent-review-records)。pstack 的探索、sync commit 與多模型 review 不能替換這些機械判定；把它們再加成所有變更必跑步驟，反而會重複現有工作。
+flow-docs-sync 的明載契約已包含相關 flow/manifest 先讀、scope 變更後重讀、syntax/context 影響範圍、顯式 `depends_on`、綁 base/flow/policy 的 fingerprints，以及獨立 review 的 stale rejection。[本地 Maintain 與 filtering](../../skills/flow-docs-sync/SKILL.md#maintain)、[本地 review records](../../skills/flow-docs-sync/references/enforcement-contract.md#agent-review-records)。pstack 的探索、sync commit 與多模型 review 不能替換這些機械判定；把它們再加成所有變更必跑步驟，反而會重複現有工作。
 
 對未知依賴的調查，`blast-radius` 提供值得沿用的思考方向，但本地 adoption inventory 已列出動態 dispatch、跨語言、API/schema、config 與 external inputs。[本地 inventory](../../skills/flow-docs-sync/references/enforcement-contract.md#adoption-inventory-and-staged-rollout)。可要求 reviewer 具體指出最關鍵的安全前提與證據，不必增加另一份 impact manifest 或自稱完整 call graph。
 

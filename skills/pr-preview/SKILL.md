@@ -15,7 +15,13 @@ Use a dedicated preview Docker daemon or host with preview-only credentials and 
 
 ## Start or implement the preview
 
-Prefer an existing project preview script after checking its source and ownership behavior. If it needs to be created or repaired, follow [the implementation contract](references/implementation.md); adapt the project's existing build rather than introducing another build path.
+| Operation | When | Action |
+| --- | --- | --- |
+| Operate | An existing preview script passes pre-flight | Run it, then verify independently |
+| Repair or Bootstrap | Pre-flight fails or no script exists | Follow [the implementation contract](references/implementation.md), adapting the project's existing build |
+| Blocked | No dedicated preview target, or ownership cannot be established | Prepare changes and report the missing target or refusal |
+
+Pre-flight: the script keeps state outside the source tree, runs trusted controller Compose rather than the PR's Compose, and refuses resources of unknown ownership. Any failure moves the work to Repair.
 
 - Start only on the user's preview request; preserve any existing authorization. Preview work does not imply enabling automatic PR deployments or merging a PR.
 - For a PR, fetch `refs/pull/<number>/head`, resolve its full SHA, and verify the detached worktree matches it. Stop on Git failures or dirty managed worktrees. For a local path, preserve uncommitted changes and report SHA plus dirty status.
@@ -33,4 +39,8 @@ Require successful build, required service health, and a bounded HTTP check agai
 
 Use the saved startup configuration and verified resource ownership. Logs and teardown work offline without fetching, checking out, or requiring the original source directory. Following logs must not block teardown. Remove only this preview's disposable containers, networks, and volumes; verify removal and preserve other workloads. Missing state requires ownership recovery, except for the qualified stopped legacy case during an explicit `up`.
 
-Report the preview URL and version, verification results, and cleanup command or cleanup result.
+Report evidence by outcome:
+
+- **up**: URL, source SHA, dirty status, image ID, verification results, untested parity differences, and the cleanup command. With the URL, state how a human reviewer reaches it, such as an SSH tunnel to a remote preview host or an existing controlled reverse proxy.
+- **down**: removed resources, verified absence, and unchanged baseline workloads.
+- **blocked**: the failed check or refusal, observed evidence, and what is needed to proceed; claim no running preview.

@@ -11,7 +11,7 @@ Reusable agent skills for previews, technical teaching, project documentation an
 | [teaching-with-diagrams](skills/teaching-with-diagrams/SKILL.md) | Teach technical concepts through grounded explanations, practice and Mermaid diagrams. Combines reviewed practices from three upstream skills with update tracking. |
 | [readme-value](skills/readme-value/SKILL.md) | Help first-time visitors understand a project's use, evidence and next step, with concrete proposals when its value is still unproven. |
 | [client-quotation](skills/client-quotation/SKILL.md) | Prepare a service quotation and matching plain-language scope attachment; includes blank editable ODT templates. |
-| [flow-docs-sync](skills/flow-docs-sync/SKILL.md) | Maintain source-linked feature flows with scoped impact checks and verifiable delivery reviews. |
+| [flow-docs-sync](skills/flow-docs-sync/SKILL.md) | Explain projects with source-linked flows, track documentation drift and apply risk-based independent review. |
 
 ## SitePing installation
 
@@ -23,9 +23,11 @@ Install with `npx --yes skills@1.5.24 add CloudWorkTools/skills --skill flow-doc
 
 > Use $flow-docs-sync to establish a system overview and per-feature flows with source-file/symbol navigation. Make synchronous updates mandatory and verify the project's CI and merge controls.
 
-The default synchronization boundary is PR delivery: defer generation during Draft/WIP work, synchronize when ready for review, and revalidate subsequent candidates before merge. Projects without PRs use commit preparation. Automatic CI generation requires a project-specific AI runner; none is bundled. See [delivery triggers](skills/flow-docs-sync/references/enforcement-contract.md#delivery-triggers-and-generation).
+Track drift at configured task/commit/PR boundaries and synchronize at task completion or PR delivery. Defer generation during Draft/WIP work, synchronize when ready for review, and revalidate subsequent candidates before merge. Projects without PRs use commit preparation. Automatic CI generation requires a project-specific AI runner; none is bundled. See [delivery triggers](skills/flow-docs-sync/references/enforcement-contract.md#delivery-triggers-and-generation).
 
-The skill bundles a Python checker, optional strict staged pre-commit template, project `AGENTS.md` rule and independent review prompt. `explain` reports all affected features and review gaps; `packet` emits bounded direct-input and dependency references without dumping raw files or archival reviews. Feature-local test/config inputs invalidate their owner and dependents rather than unrelated features. It combines file MD5 integrity with symbol/context hashes: native Python or optional Tree-sitter adapters for JS/TS/TSX, Go, Rust, Java, C#, C/C++, GDScript, SQL, Prisma and JSON. Other formats use explicit file-level coverage. See the [checker contract and language boundaries](skills/flow-docs-sync/references/enforcement-contract.md).
+The skill bundles a Python checker, optional strict staged pre-commit template, project `AGENTS.md` rule and independent review prompt. `explain` reports affected features, required review features and review gaps; `packet` emits bounded direct-input and dependency references without dumping raw files or archival reviews. Feature-local test/config inputs invalidate their owner and dependents rather than unrelated features. It combines file MD5 integrity with symbol/context hashes: native Python or optional Tree-sitter adapters for JS/TS/TSX, Go, Rust, Java, C#, C/C++, GDScript, SQL, Prisma and JSON. Other formats use explicit file-level coverage. See the [checker contract and language boundaries](skills/flow-docs-sync/references/enforcement-contract.md).
+
+New adoption requires independent review and a purpose/entrypoint/module overview linked to feature flows. Ordinary source-verified maintenance may explicitly set per-feature `requires_review: false`; omission preserves strict review. Relaxing an existing strict base still needs review. Recovery follows recorded progress and explicit cost caps rather than a universal two-round limit.
 
 Adoption requires the root reading rule, real feature/source mappings and project-specific CI/merge controls. Installing the skill only copies resources. Headless graph/complexity checks do not prove visual readability; an agent review record does not replace repository-required human approval.
 

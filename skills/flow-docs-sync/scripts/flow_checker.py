@@ -262,6 +262,7 @@ def load(tree, manifest_path, verify=True):
     require(1 <= limits['nodes'] <= 1000, 'supported node budget is 1..1000')
     covered = {path: set() for path in sources}
     for feature in features.values():
+        require(isinstance(feature.get('requires_review', True), bool), 'requires_review must be boolean')
         nodes = graph(tree.read(feature['flow']), limits, feature['flow'])
         mapped = set()
         require(isinstance(feature.get('retired', False), bool), 'retired must be boolean')
@@ -532,7 +533,7 @@ def run(args):
     if args.manifest not in base_tree.entries:
         affected = set(current)
         if args.command == 'check':
-            print('baseline: base has no manifest; all features require review')
+            print('baseline: base has no manifest; all features are affected')
     else:
         previous = load(base_tree, args.manifest)
         removed = previous[2].keys() - loaded[2].keys()
@@ -545,8 +546,12 @@ def run(args):
         return
     reviews = loaded[0].get('reviews', [])
     require(isinstance(reviews, list), 'reviews must be a list')
+    prior_features = previous[2] if previous else {}
+    required = {identity for identity in affected
+                if loaded[2][identity].get('requires_review', True)
+                or (identity in prior_features and prior_features[identity].get('requires_review', True))}
     missing = [{'feature': identity, 'reason': reason}
-               for identity in sorted(affected)
+               for identity in sorted(required)
                if (reason := review_status(tree, reviews, identity, current[identity]))]
     if args.command == 'explain':
         mode = 'index' if args.staged else 'worktree'
@@ -554,12 +559,14 @@ def run(args):
         print(json.dumps({'schema_version': 1, 'base': oid, 'mode': mode,
                           'affected': sorted(affected), 'resolved_base': oid, 'candidate': mode,
                           'affected_features': sorted(affected),
+                          'required_review_features': sorted(required),
                           'fingerprints': {identity: current[identity] for identity in sorted(affected)},
                           'missing_review_evidence': missing}, sort_keys=True))
         return
     require(not missing, '; '.join(item['reason'] + ': ' + item['feature']
                                   + '; fingerprint ' + current[item['feature']] for item in missing))
     print('check passed (' + ('index' if args.staged else 'worktree') + '); affected features: ' + ', '.join(sorted(affected)))
+    print('mechanical validation only; independent review required for: ' + ', '.join(sorted(required)))
 
 
 def main():

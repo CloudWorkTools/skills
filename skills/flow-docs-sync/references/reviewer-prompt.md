@@ -22,7 +22,10 @@ Generate `packet` for affected features and supply:
   execution and tested input/environment identity. Keep full raw sources and
   historical evidence available on demand; no whole-repository diff dump.
 
-State the finite required read set and remaining unknowns before paid review.
+Before paid review, verify that the finite required read set, exact source
+versions, bounded ranges, flows and actual test evidence are available. Repair
+known material gaps and local checker errors before dispatch. State remaining
+unknowns; do not pay a reviewer merely to rediscover a missing file.
 Split oversized work at behavior/contract boundaries; source chunks are reading
 aids, not independent approvals. Reuse verified unchanged context and evidence.
 Read generated hashes and archival history through tool summaries rather than
@@ -67,25 +70,34 @@ protected review/CI must establish those where required.
 
 ## Correction and material recovery
 
-Set a shared delivery-batch allowance before dispatch using authorized model calls,
-time or tokens available in the runtime. Preserve existing stricter project limits
-and explicit user budgets. Otherwise allow one initial independent batch review
-and at most one bounded follow-up for demonstrated findings or repaired material
-gaps. Split only for real independent boundaries, not to reset the allowance.
+There is no universal two-round limit. Before dispatch, record any explicit
+shared delivery-batch cap with its unit, value and spent amount: model calls,
+elapsed time or tokens. Preserve user/runtime budgets and stricter project limits.
+If none is configured, state that no numeric cap is configured; never invent a
+provider quota or treat missing telemetry as unlimited credit.
 
-Within a live attempt, continue bounded reads in the same reviewer context.
-Before an ended attempt is followed up, fix the named issue or supply the named
-missing access/ranges in a smaller packet. Finding correction and material repair
-are different causes, both visible in the shared allowance. Preserve demonstrated
-findings even when a result also lacks evidence; unrelated additions do not fix
-a read gap. Source/base/fingerprint/reviewer changes and task-owned pushes do not
-reset the request identity or spent allowance.
+Within a live attempt, complete bounded reads in the same reviewer context.
+After an ended attempt, dispatch again only with recorded concrete progress:
+a demonstrated finding was corrected or specifically named missing material is
+now accessible in a repaired packet. Both consume actual configured cost, but
+record finding correction and material recovery separately. Stop automatic
+redispatch when the same blocker recurs without new evidence or correction;
+changing a fingerprint, reviewer, base or unrelated file is not progress.
+A completed initial review and follow-up do not themselves forbid further
+review when the next attempt has concrete progress and fits explicit limits.
 
-When the allowance is exhausted, stop automatic dispatch, preserve the failed or
-incomplete gate and finish independent safe work. Give one consolidated account
-of remaining risks, scope and cost with options for a policy/budget decision;
-repeated per-feature rerun approvals are not a default recovery strategy. Never
-replace missing review with author self-approval or a rewritten fingerprint.
+Preserve unresolved findings, raw attempts and one request identity across
+features, retries and task-owned pushes. Splitting work, changing credentials or
+reviewers does not reset spent cost. Enforce a cap before dispatch; if a hard cap
+cannot be measured/enforced, stop paid automation and report that limitation.
+
+When a configured cap is exhausted or progress stops, stop automatic dispatch
+and give one consolidated report of blockers, evidence, spent cost and remaining
+work. Continue independent safe work. Report source/document synchronization,
+mechanical validation and independent review separately. Optional review does
+not block ordinary synchronized delivery. Required review stays incomplete and
+keeps the project's merge gate closed. Never substitute author self-approval or
+rewrite a fingerprint to manufacture approval.
 
 Record native usage for each observed attempt, including failures, in existing
 task evidence. Label missing counters and shared-session attribution unknown;

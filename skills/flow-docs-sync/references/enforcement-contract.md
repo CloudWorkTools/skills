@@ -11,7 +11,7 @@ scope, hook, checker or approval rules.
 | Path | Responsibility |
 | --- | --- |
 | `AGENTS.md` | Short project reading/delivery rule and pointers |
-| `docs/flows/README.md` | Feature index, source/contract links and explicit adopted scope/gaps |
+| `docs/flows/README.md` | Human-readable project purpose, overview diagram, feature index, source/contract links and explicit adopted scope/gaps |
 | `docs/flows/<feature>.mmd` | Behavior branches and source navigation; `.puml` for an explicitly chosen supported PlantUML flow |
 | `docs/flow-manifest.json` | Machine inventory, mappings, dependencies, input fingerprints and current passing pointers |
 | Existing owning contract, otherwise `docs/flows/contracts.md` | One source of truth for intended boundaries, errors and invariants |
@@ -27,23 +27,50 @@ does not require another adoption/baseline report. Raw history can stay in Git o
 retained artifacts while the active manifest lists current passing pointers;
 removing stale pointers never approves a feature or deletes its raw history.
 
-For a new adoption, adapt this root rule to actual paths:
+During project setup after installation, add or update one short flow-reading
+section in the project's root `AGENTS.md`. Create the file when absent; preserve
+unrelated content and update the existing section in place on repeated adoption.
+Use actual generated paths and working links. Resource installation alone does
+not edit a consuming project's instructions; the adopting agent performs this
+step before declaring project setup complete.
+
+Adapt this compact root rule to actual paths:
 
 ```markdown
 ## Flow documentation
-Before editing adopted behavior, read docs/flows/README.md, affected manifest
-feature/dependency records, flows and owning contracts. Report affected IDs;
-verify missing baselines from source. Validate hashes/history with the checker.
-During Draft/WIP keep pending impact. Before non-draft PR delivery synchronize
-affected documentation and obtain required independent review; check the actual
-candidate against a trusted base. Preserve existing human/merge approvals.
-Each executing agent reads its affected context again after a scope change.
-Missing required context or failed checks remain incomplete, not approved.
+Before editing, read [project overview](docs/flows/README.md), then the affected feature
+flow and owning contract. Use node mappings in docs/flow-manifest.json to locate
+source files and symbols; verify changed or missing context against code.
+Before delivery, synchronize affected flows and run the project's flow checks.
+See [flow policy](docs/flows/README.md) for triggers and required approvals.
 ```
 
-Record the delivery boundary and exact checker command beside the rule. Preserve
-stricter existing instructions until an explicit migration is authorized. Tool
-discovery does not prove document comprehension or read order.
+Keep detailed commands, delivery/review policy and coverage gaps in the linked
+flow index. Preserve stricter existing instructions until an explicit migration
+is authorized. Verify the added links and an agent's overview-to-flow-to-source
+navigation; file presence alone does not establish discovery or comprehension.
+
+## Reader navigation and correspondence
+
+The overview in `docs/flows/README.md` explains purpose, entrypoints, core
+control/data flow, module responsibilities and external systems. Link its stages
+to feature flows. Keep detailed branches in those flows instead of crowding the
+overview. The overview is a navigation aid, outside the portable flow parser;
+inspect its rendered output when tools exist and report visual checks separately.
+
+Each feature flow describes actual branch conditions, important side effects,
+errors, cancellation and recovery where applicable. All checked nodes map to
+source paths and qualified symbols in AST modes, or files in file mode. Use
+symbol identity as the durable locator; line numbers are optional hints. Verify
+that an AI agent can follow a decision node to the controlling implementation.
+
+In existing task/CI evidence record the trusted base, candidate revision or
+snapshot identity, affected fingerprints and source-verification outcome.
+Distinguish unchanged inputs, changed inputs pending interpretation and documents
+verified against source. Independent review has its own status. Hash equality
+establishes correspondence to recorded inputs, not semantic correctness.
+A source change with no necessary diagram change still needs a recorded
+source-based explanation from the maintaining agent.
 
 ## Manifest version 1
 
@@ -59,6 +86,7 @@ This is an initial skeleton; run `snapshot` to populate source fingerprints befo
   "features": [{
     "id": "job.run",
     "flow": "docs/flows/job.run.mmd",
+    "requires_review": true,
     "mappings": [
       {"node": "A", "path": "src/jobs.py", "symbol": "run"},
       {"node": "B", "path": "src/jobs.py", "symbol": "run"}
@@ -71,6 +99,22 @@ This is an initial skeleton; run `snapshot` to populate source fingerprints befo
 }
 ```
 
+`requires_review` is a per-feature boolean. Omission means `true` for backward
+compatibility. New adoption requires independent initial review; subsequently
+ordinary low-risk maintenance may explicitly use `false`. Keep `true` for
+important cross-module contracts, security/data-loss risk and project-required
+review. Record risk decisions in existing task evidence; the checker validates
+the declared policy, not risk classification. Raise the flag before delivering
+new risky behavior and propagate required assurance to affected boundaries.
+
+Changing `true` or omitted to `false` still requires a current independent review
+against the strict base, plus authorization to migrate existing project rules.
+Only after the migration is included in the trusted comparison base can ordinary changes omit independent review. A migration commit on the same PR does not relax that PR's strict base.
+Changing a flag affects the feature fingerprint and declared dependents.
+Optional review never disables inventory, integrity, mapping or syntax checks.
+A stale/failed optional review remains historical evidence, not a current pass;
+any demonstrated unresolved mismatch still prevents a source-verified claim.
+
 `scope.include` uses case-sensitive shell-style `fnmatch` patterns over full relative paths. Choose patterns that account for all first-party behavioral inputs; `src/*` is only an example. `scope.exclude` maps narrow patterns to reviewable reasons. Changes to scope/policy affect review obligations; excluding first-party logic leaves whole-project coverage incomplete.
 
 A `python` source records raw `md5`, normalized module `context_hash` and a `symbols` object mapping qualified names to SHA-256 AST hashes. A `file` source records raw `md5` and uses whole-file impact. Symbol names follow Python definitions, for example `run` and `Worker.run`; use the checker's computed inventory rather than guessing. Node mappings may identify a containing symbol for start/end/decision nodes. File-mode mappings omit `symbol` and use the whole file.
@@ -79,7 +123,7 @@ A `tree-sitter` source adds an explicit `language`, with `context_hash` and `sym
 
 Every declared node must be mapped, every mapping must reference a real node/input/symbol, and discovered Python functions cannot silently remain uncovered. Shared call dependencies require explicit `depends_on` feature links; the checker does not infer a complete call graph. Use file-level mode when dependencies or dynamic behavior cannot be safely bounded.
 
-To remove a feature, retain its ID and historical flow with `retired: true` and empty `mappings`. Retirement requires a current review. Deleting its record entirely loses historical responsibility and is rejected. Retired flows remain parseable history and do not claim current source-node mappings.
+To remove a feature, retain its ID and historical flow with `retired: true` and empty `mappings`. Retirement follows the declared review policy and must preserve explicit disposition. Deleting its record entirely loses historical responsibility and is rejected. Retired flows remain parseable history and do not claim current source-node mappings.
 
 ## AST impact and fingerprints
 
@@ -98,27 +142,27 @@ The [colored workflow](../SKILL.md#change-filtering-and-synchronization-gate) di
 | Change | Mechanical impact | Flow and review obligation |
 | --- | --- | --- |
 | Ordinary source comments/formatting in an AST mode, with normalized syntax and other bound inputs unchanged | Raw MD5 becomes stale; refresh with `snapshot` | Keep flows; no new semantic review. Candidate checks still run. |
-| Symbol body, branch, operator or literal | Changed symbol hash affects mapped features and declared dependents | Review affected features; edit only flows/contracts whose documented behavior changes. A reviewer must evidence an unchanged-flow decision. |
+| Symbol body, branch, operator or literal | Changed symbol hash affects mapped features and declared dependents | Verify affected features from source; edit only flows/contracts whose behavior changes. Record unchanged-flow reasoning. Independently review only required features. |
 | Imports, globals, defaults, decorators or other module context | Context hash affects every feature mapped to that file and their declared dependents | Inspect the broader affected scope with full context. |
-| File-mode input, including its comments/whitespace | Byte-sensitive file hash affects every mapped feature and declared dependents | Conservative review applies; file mode has no cosmetic filter. |
-| Flow bytes, mappings, dependency links or scope/policy | Bound content changes affected fingerprints; flow bytes are not AST-normalized | Review affected synchronization obligations even when source logic is unchanged. Policy changes can affect all features. |
+| File-mode input, including its comments/whitespace | Byte-sensitive file hash affects every mapped feature and declared dependents | Conservative impact applies; file mode has no cosmetic filter. Review follows feature policy. |
+| Flow bytes, mappings, dependency links or scope/policy | Bound content changes affected fingerprints; flow bytes are not AST-normalized | Reverify affected synchronization obligations even when source logic is unchanged; independent review follows feature policy. Policy changes can affect all features. |
 | New source/symbol or missing mapping | Inventory/mapping validation fails independently of `snapshot` | Register and map inputs before passing; no hash refresh can hide missing coverage. |
 
 Python docstrings remain AST content. Whitespace inside literals and recognized Tree-sitter directive comments can affect behavior or tooling, so they are retained. Conversely, syntactically different but behaviorally equivalent code can still trigger review; syntax hashing does not decide runtime equivalence. Remote API changes with unchanged local inputs need separate runtime evidence.
 
 The cost reduction is fewer unrelated flow rewrites and semantic-review calls. Reviewers need complete relevant base/candidate sources, direct module context, dependency contracts, flows and test evidence. They expand to dependency implementation when the boundary cannot be established from those contracts; transitive hashing does not make every unrelated dependency line mandatory reading. `depends_on` must account for cross-feature impact. Whole-file mode cannot recover an omitted cross-file dependency; inventory it and extend mappings/dependency links or the adopted scope.
 
-Fingerprints bind the exact comparison base and relevant content, so changed inputs invalidate affected evidence. No affected features means no new review obligation; it does not reauthenticate previous reviews. Initial adoption against an existing base without a manifest requires review of all candidate features. An invalid base fails; comparing a committed candidate with itself via `--base HEAD` creates an empty comparison and cannot establish change review. CI must select the intended base/candidate and enforce its result through required checks and protected merge settings.
+Fingerprints bind the exact comparison base and relevant content, so changed inputs invalidate affected evidence. No affected features means no new review obligation; it does not reauthenticate previous reviews. Initial adoption treats all candidate features as affected; configure initial independent review for all features. The checker enforces declared feature flags, so it does not alone prove adoption policy compliance. An invalid base fails; comparing a committed candidate with itself via `--base HEAD` creates an empty comparison and cannot establish change review. CI must select the intended base/candidate and enforce its result through required checks and protected merge settings.
 
 ## Delivery triggers and generation
 
-Default to synchronizing the PR delivered for review and merge. Pre-edit reading still applies during development; edits, saves, Draft PRs and WIP commits do not require flow generation or semantic review. Pending work cannot claim synchronized delivery. Generation changes only necessary documents; validation checks the actual candidate even when no redraw is needed.
+Default to final synchronization at task completion or PR delivery, with early mechanical drift tracking at configured task/commit/PR boundaries. Pre-edit reading still applies during development; edits, saves, Draft PRs and WIP commits do not require flow generation or semantic review. Run configured mechanical impact checks and record pending features; a stale hash is a drift signal, not a reason to invoke AI review. Pending work cannot claim synchronized delivery. Generation changes only necessary documents; validation checks the actual candidate even when no redraw is needed.
 
 | Boundary | Required integration behavior | AI work |
 | --- | --- | --- |
 | Draft or WIP development | Preserve pending impact and pre-edit reading. Required CI reports synchronization pending for Drafts; it must not report a passing merge gate. | Defer generation and semantic review. |
-| Non-draft PR opened/reopened, or Draft marked ready | Prepare the exact review candidate and run Maintain. | Filter impact first; generate necessary documents, then review affected fingerprints. |
-| New candidate on a ready PR, including generated docs commits | Revalidate on `synchronize`; a base/policy/dependency change also requires revalidation. | Reuse matching evidence; synchronize/review invalidated features only. |
+| Non-draft PR opened/reopened, or Draft marked ready | Prepare the exact review candidate and run Maintain. | Filter impact first; verify source and generate necessary documents, then review required affected fingerprints. |
+| New candidate on a ready PR, including generated docs commits | Revalidate on `synchronize`; a base/policy/dependency change also requires revalidation. | Reuse matching evidence; synchronize invalidated features and review only those requiring it. |
 | Merge gate, including merge queue where used | Required CI validates the intended head, test-merge or merge-group candidate against a trusted base. Pending, failed or stale results prevent merge. | A validator must not silently generate files and declare its earlier candidate passed. |
 | Project without PRs, or explicit strict per-commit policy | Prepare the intended staged candidate before commit; the optional pre-commit hook validates the index. | Generate after intended content settles, before the commit. |
 
@@ -132,7 +176,7 @@ Pin the base and candidate before generation. Keep generation outputs in the PR 
 
 For partial staging, isolate the intended index contents before generation. `snapshot` reads the worktree and rejects `--staged`; running it on unrelated unstaged experiments produces the wrong fingerprints. Return only authorized documentation/evidence patches, preserve existing edits, and recheck candidate identity before applying results. Never stage unrelated code with `git add -A` as a synchronization shortcut.
 
-A runner needs a noninteractive model command, timeout/failure handling and duplicate-run protection. Reuse valid feature evidence on retries; generated outputs must not cause an endless generation loop. Missing credentials or review leave synchronization incomplete. Use a safe patch handoff for untrusted forks; do not execute untrusted PR code with privileged workflow credentials. Verify bot-generated commits receive the required checks and reviews before claiming completion. Post-commit or post-merge generation cannot guarantee that the original delivered candidate contains synchronized documents.
+A runner needs a noninteractive model command, timeout/failure handling and duplicate-run protection. Reuse valid feature evidence on retries; generated outputs must not cause an endless generation loop. Missing generation credentials can leave synchronization incomplete. Missing required review leaves independent assurance incomplete; report source synchronization separately. Use a safe patch handoff for untrusted forks; do not execute untrusted PR code with privileged workflow credentials. Verify bot-generated commits receive the required checks and reviews before claiming completion. Post-commit or post-merge generation cannot guarantee that the original delivered candidate contains synchronized documents.
 
 Apply the same shared [review allowance](reviewer-prompt.md#correction-and-material-recovery) to unattended dispatch. Record a request identity at the first ready event or explicit user delivery request. Agent/runner commits for that task, retries and base revalidation retain its identity and budgets, regardless of push credentials. Start another request only for a recorded new user task or explicit user rerun; commit authors and event actors alone do not establish that boundary. Persist identity and per-feature attempts in existing runner/task evidence before task-owned pushes so subsequent jobs can retrieve them. If that state is unavailable, stop automatic dispatch and report automation incomplete.
 
@@ -161,7 +205,7 @@ python3 tools/flow-docs/flow_checker.py packet --root . --base <trusted-base> --
 
 `explain` validates the same source/mapping/diagram inputs and returns all affected
 features, fingerprints and missing/invalid review declarations in one JSON result.
-Its exit zero means the report was produced, not that reviews passed. `check`
+Its exit zero means the report was produced, not that reviews passed. `required_review_features` lists affected features required by candidate or base policy; `missing_review_evidence` covers that set only. Optional features remain in `affected_features` and `fingerprints`. `check`
 still fails for any required missing or invalid review.
 
 `packet` validates the candidate, then returns direct feature inputs from the
@@ -241,7 +285,7 @@ For interactions that benefit from `sequenceDiagram`, subgraphs or richer notati
 
 ## Agent review records
 
-Dispatch [the independent reviewer prompt](reviewer-prompt.md) automatically when a fresh-subagent facility is available. Provide raw source/dependencies in addition to diff and flows; those alone may omit critical context. Retain required human approvals where repository policy specifies them.
+For features requiring review, dispatch [the independent reviewer prompt](reviewer-prompt.md) when a fresh-subagent facility is available. Ordinary source-verified maintenance with explicit `requires_review: false` needs no second agent. Provide raw source/dependencies in addition to diff and flows; those alone may omit critical context. Retain required human approvals where repository policy specifies them.
 
 Save the reviewer response at the review-evidence path specified in the [project-file layout](#project-file-layout). Each manifest review entry contains `feature`, `fingerprint`, `reviewer`, `verdict: "pass"` and `evidence` pointing to that exact file. The file must identify the same feature, fingerprint, reviewer and passing verdict, with an empty `findings` list. A failed/incomplete response or stale fingerprint is rejected.
 
@@ -292,7 +336,7 @@ For a mixed-language project, choose modes explicitly before running `snapshot`:
 
 These are source-record fragments, not a complete manifest. Missing parsers do not silently downgrade: explicitly choose file mode if appropriate. Use the computed symbol inventory, map each checked flow node, and include tests/checker/parser/instruction policy inputs as required by the [manifest contract](#manifest-version-1).
 
-For example, first adopt `download.run` together with its `network.fetch` dependency, UI/native entrypoints and required configuration, even when they live in different directories. Map their sources and flows, run `snapshot`, obtain initial reviews and check against a real existing base. List unrelated features outside `scope.include` and unresolved areas as coverage gaps; only the adopted scope can be called covered. Expand through another reviewed scope/mapping change. Excluding an unknown dependency from an already adopted feature cannot turn incomplete coverage into a pass claim.
+For example, first adopt `download.run` together with its `network.fetch` dependency, UI/native entrypoints and required configuration, even when they live in different directories. Map their sources and flows, run `snapshot`, obtain initial reviews, record subsequent risk-based review policy and check against a real existing base. List unrelated features outside `scope.include` and unresolved areas as coverage gaps; only the adopted scope can be called covered. Expand through another reviewed scope/mapping change. Excluding an unknown dependency from an already adopted feature cannot turn incomplete coverage into a pass claim.
 
 ## Runtime evidence template
 
@@ -331,7 +375,7 @@ Record adoption once in durable evidence using the [project layout](#project-fil
 | Coverage | Adopted features/inputs, dependency inventory, exclusions and unknowns; partial or whole-project claim. |
 | Delivery trigger and generation | Selected boundary, exact workflow/runner paths, tested event/candidate and result; distinguish agent preparation from unattended generation. No runner means automation incomplete. |
 | Structural checker | Exact base/candidate, worktree or staged mode, command and result; no semantic-correctness claim. |
-| Agent semantic review | Feature fingerprints, reviewer/evidence paths and findings; structured records do not authenticate a reviewer. |
+| Agent semantic review | Required-passed, required-incomplete or optional-not-run, feature fingerprints, reviewer/evidence paths and findings; structured records do not authenticate a reviewer. |
 | Docs sync token usage | This delivery request's usage scope and evidence; per-phase/model input, cache creation/read and output, including failed attempts. State a measured total or partial/unknown coverage. |
 | Behavior and external inputs | Test/runtime evidence, external versions or observation time, and skipped cases. |
 | Visual inspection | Rendered diagrams/derived views inspected, or visual verification pending. |
@@ -364,12 +408,12 @@ Run mechanical cases through the real checker in isolated Git repositories. Veri
 - Valid baseline plus fresh review passes; stale hashes, nonexistent paths/symbols and unmapped new files/functions fail.
 - Cosmetic Python edits refresh raw MD5 without unrelated semantic-review churn; one changed function does not invalidate an unrelated function's feature.
 - Globals/imports and shared/dependent features receive conservative impact; base mappings prevent deleted records from hiding responsibility.
-- Rehash-only changes without current review fail when semantics changed; stale, failed or incomplete review artifacts fail.
+- Rehash-only changes without current required review fail when semantics changed; stale, failed or incomplete required review artifacts fail. Explicit optional review still enforces source integrity and mappings; relaxing a strict base requires review.
 - Staged content is checked instead of unstaged fixes; missing bases and unsupported syntax do not silently succeed.
 - Invalid graph references, excessive nodes/branch depth and unsafe paths fail; loops terminate in finite time.
 
 Run agent-reading cases as isolated agent scenarios and inspect actual read/edit ordering; a read-set declaration alone is insufficient. Test tiny refactors, deletions, missing baselines, new capabilities, delegated work and expanded scope. Preserve project-specific image/production validation requirements when installing or modifying CI; unexecuted requirements remain incomplete.
 
-Also test large-input truncation and bounded recovery, exhausted retries without fingerprint resets, partial passes, changing candidates and repeated delivery preparation. Keep scenario results outside the installed skill.
+Also test large-input truncation and bounded recovery, configured cost caps without fingerprint resets, progress-based recovery and no-progress stopping, partial passes, changing candidates and repeated delivery preparation. Keep scenario results outside the installed skill.
 
 Report installed skill, root reading rule, source coverage, structural checker, agent review, visual inspection, required CI and remote merge enforcement separately. No individual result proves the entire workflow correct.

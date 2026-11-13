@@ -65,6 +65,59 @@ class CheckerTests(unittest.TestCase):
         self.manifest['reviews'].append({**record, 'evidence': evidence})
         self.save()
 
+    def test_explicit_optional_review_reports_mechanics_separately(self):
+        for feature in self.manifest['features']:
+            feature['requires_review'] = False
+        self.save()
+        self.baseline()
+        self.write('app.py', 'VALUE = 1\ndef first():\n    return VALUE + 1\ndef second():\n    return 2\n')
+        self.cli('snapshot')
+        report = json.loads(self.cli('explain', '--base', 'HEAD'))
+        self.assertEqual(report['affected_features'], ['one'])
+        self.assertEqual(report['required_review_features'], [])
+        self.assertEqual(report['missing_review_evidence'], [])
+        self.cli('check', '--base', 'HEAD')
+
+    def test_relaxing_existing_review_policy_requires_review(self):
+        self.baseline()
+        strict_base = self.git('rev-parse', 'HEAD').decode().strip()
+        self.manifest['features'][0]['requires_review'] = False
+        self.save()
+        self.assertIn('missing current review', self.cli('check', '--base', 'HEAD', ok=False))
+        self.review('one')
+        self.cli('check', '--base', 'HEAD')
+        self.git('add', '.')
+        self.git('commit', '-qm', 'reviewed policy migration')
+        self.write('app.py', 'VALUE = 1\ndef first():\n    return VALUE + 1\ndef second():\n    return 2\n')
+        self.cli('snapshot')
+        self.assertIn('missing current review', self.cli('check', '--base', strict_base, ok=False))
+        self.cli('check', '--base', 'HEAD')
+
+    def test_enabling_review_requires_current_evidence(self):
+        for feature in self.manifest['features']:
+            feature['requires_review'] = False
+        self.save()
+        self.baseline()
+        self.manifest['features'][0]['requires_review'] = True
+        self.save()
+        report = json.loads(self.cli('explain', '--base', 'HEAD'))
+        self.assertEqual(report['required_review_features'], ['one'])
+        self.assertIn('missing current review', self.cli('check', '--base', 'HEAD', ok=False))
+
+    def test_review_policy_must_be_boolean(self):
+        self.manifest['features'][0]['requires_review'] = 'false'
+        self.save()
+        self.baseline()
+        self.assertIn('requires_review must be boolean', self.cli('check', '--base', 'HEAD', ok=False))
+
+    def test_optional_review_does_not_skip_source_integrity(self):
+        for feature in self.manifest['features']:
+            feature['requires_review'] = False
+        self.save()
+        self.baseline()
+        self.write('app.py', 'def first():\n    return 3\n')
+        self.assertIn('stale', self.cli('check', '--base', 'HEAD', ok=False))
+
     def test_pinned_base_stays_equal_to_pr_base_after_local_commits(self):
         self.baseline()
         base = self.git('rev-parse', 'HEAD').decode().strip()

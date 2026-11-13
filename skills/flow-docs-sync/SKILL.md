@@ -1,14 +1,16 @@
 ---
 name: flow-docs-sync
-description: Use when adopting or maintaining source-linked feature flows in a project with flow documentation, or auditing drift between those flows, contracts and code.
+description: Use when creating project overview and source-linked flow diagrams for humans and AI agents, maintaining their correspondence to code, or auditing documentation drift.
 license: MIT
 ---
 
 # Flow documentation synchronization
 
-Keep the affected implementation, flow and authoritative contract consistent at
-PR delivery. Use deterministic checks for inventory and fingerprints; reserve
-independent judgment for behavior and cross-boundary contracts.
+Help humans understand what the project does and help AI agents locate entrypoints,
+control decisions and implementation. Maintain a project overview plus focused,
+source-linked feature flows. Detect version drift with deterministic inventory,
+mapping and fingerprint checks; interpret affected behavior from source.
+Independent review is a separate, policy-driven assurance step.
 
 ## Select the operation
 
@@ -46,18 +48,26 @@ review records. Plan such a migration separately; never label a bypass as reuse.
    Run `snapshot` only to refresh registered source hashes; it neither registers
    unknown code nor approves it. Keep current passing pointers in the manifest;
    preserve historical raw results in existing task evidence, Git or artifacts.
-5. **Review a bounded packet.** Use `packet --base <sha> --feature <id>` with the
+5. **Select review by risk and policy.** For new adoption, explicitly set each
+   feature's `requires_review`. Require independent review for initial adoption,
+   important cross-module contracts, security/data-loss risk and project-mandated
+   cases. Ordinary maintenance may use `false` after source-based verification.
+   Record the decision and rationale in existing task evidence. Existing strict
+   policy needs an explicit migration, including the checker and hooks.
+   **When review is required, review a bounded packet.** Use `packet --base <sha> --feature <id>` with the
    same candidate mode. Supply changed relevant diff, direct module context,
    named dependency contracts and actual test command/input/result evidence.
    Read [review scope and budget](references/reviewer-prompt.md) before dispatch.
    Related features may share an independent reviewer with separate verdicts;
    partial source shards cannot be combined into approval. Keep complete raw
    sources accessible for justified expansion, not mandatory blanket rereads.
-6. **Validate and report.** Import only an unchanged, complete passing review
+6. **Validate and report.** When independent review is required, import only an unchanged, complete passing review
    that matches the current feature fingerprint. Run `check` against the actual
    candidate and trusted base, plus existing project checks. Reuse tests only
    for unchanged recorded code/config/dependency/environment inputs. Report
-   missing review, runtime, visual or human approvals distinctly. Record known
+   source verification, mechanical checks, required/optional independent review,
+   runtime, visual and human approvals separately. A mechanical pass does not
+   prove that documentation describes behavior correctly. Record known
    synchronization/review/recovery usage; unknown telemetry is not a new gate.
 
 No separate preparation agent is needed for routine maintenance. Use the
@@ -65,7 +75,36 @@ existing PR/task evidence instead of creating another baseline, adoption report
 or runtime document for every edit. Installation alone provides no AI runner or
 remote merge protection; verify configured controls before claiming them.
 
+## Navigation and synchronization outcome
+
+The overview explains project purpose, primary entrypoints, core data/control flow,
+module responsibilities and external systems. Link each overview stage to its
+feature flow. Feature flows show meaningful branch conditions, errors,
+cancellation/recovery and side effects. Map each node to a real source path and
+qualified symbol where supported; line numbers are optional navigation hints.
+A reader must be able to follow a use case from entry to outcome and an AI agent
+must be able to locate the code controlling each important decision.
+
+Track source correspondence separately from assurance. Report unchanged inputs,
+changed inputs pending interpretation, or source-verified documentation, together
+with the compared base/candidate and affected fingerprints. Report independent
+review as required-passed, required-incomplete, or optional-not-run. Keep these
+records in existing task/CI evidence, outside fingerprint inputs. `snapshot`
+updates integrity hashes only; it cannot establish source verification.
+
+At task completion, configured pre-commit checks and PR updates, run local impact
+checks first and record affected features as pending when behavior changes.
+During WIP, stale hashes indicate pending work; refresh once intended inputs
+settle. Generate only necessary diagrams before delivery. No affected inputs
+means no new AI call. Project hooks/events must actually be configured and tested;
+installing the skill alone starts no background watcher or model runner.
+
 ## Project files and responsibilities
+
+During project setup after installation, add or update a short reading guide in
+root `AGENTS.md`, using the actual overview, flow and mapping paths. Preserve
+existing instructions and avoid duplicate sections. Setup is incomplete without
+this guide; resource installation alone does not write it.
 
 Keep one authoritative contract and concise source-navigation index. For new
 adoption use the [project layout and root rule](references/enforcement-contract.md#project-file-layout).
